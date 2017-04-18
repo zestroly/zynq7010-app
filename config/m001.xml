@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root ErrorCode="0">
+  <cmd name="GainAuto" reg="0x40600000" type="String" parent="AnalogControls">
+    <Combo StringValue="Off" IntValue="0"/>
+    <Combo StringValue="Once" IntValue="1"/>
+    <Combo StringValue="Continuous" IntValue="2"/>
+    <Doc>增益设置</Doc>
+  </cmd>
+  <cmd name="GainSelector" reg="0x40600004" type="String" parent="AnalogControls">
+    <Combo StringValue="Digital" IntValue="0"/>
+    <Combo StringValue="Analog" IntValue="1"/>
+    <Doc>增益方式</Doc>
+  </cmd>
+  <cmd name="GainRaw" reg="0x40600008" type="Int"/>
+  <cmd name="GammaEnable" reg="0x40600020" type="String">
+    <Combo StringValue="Disable" IntValue="0"/>
+    <Combo StringValue="Enable" IntValue="1"/>
+  </cmd>
+  <cmd name="GammaSelector" reg="0x40600024" type="String">
+    <Combo StringValue="User" IntValue="0"/>
+    <Combo StringValue="sRgb" IntValue="1"/>
+  </cmd>
+  <cmd name="Gamma" reg="0x40600028" type="Double"/>
+  <cmd name="PixelFormat" reg="0x40600040" type="String">
+    <Combo StringValue="Mono 8" IntValue="0"/>
+    <Combo StringValue="Mono 12" IntValue="1"/>
+    <Combo StringValue="YUV 422" IntValue="2"/>
+  </cmd>
+  <cmd name="PixelSize" reg="0x40600044" type="String">
+    <Combo StringValue="8 Bits/Pixel" IntValue="8"/>
+  </cmd>
+  <cmd name="PixelColorFilter" reg="0x40600048" type="String">
+    <Combo StringValue="No Filter" IntValue="0"/>
+  </cmd>
+  <cmd name="ReverseX" reg="0x40600060" type="Bool"/>
+  <cmd name="ReverseY" reg="0x40600064" type="Bool"/>
+  <cmd name="TestImageSelector" reg="0x40600068" type="String">
+    <Combo StringValue="Test Image Off" IntValue="0"/>
+    <Combo StringValue="Test Image 1" IntValue="1"/>
+    <Combo StringValue="Test Image 2" IntValue="2"/>
+    <Combo StringValue="Test Image 3" IntValue="3"/>
+    <Combo StringValue="Test Image 4" IntValue="4"/>
+    <Combo StringValue="Test Image 5" IntValue="5"/>
+  </cmd>
+  <cmd name="Width" reg="0x40600080" type="Int"/>
+  <cmd name="Height" reg="0x40600090" type="Int"/>
+  <cmd name="OffsetX" reg="0x406000A0" type="Int"/>
+  <cmd name="OffsetY" reg="0x406000B0" type="Int"/>
+  <cmd name="ExposureAuto" reg="0x406000C0" type="String">
+    <Combo StringValue="off" IntValue="0"/>
+    <Combo StringValue="once" IntValue="1"/>
+    <Combo StringValue="continuous" IntValue="2"/>
+  </cmd>
+  <cmd name="ExposureTimeRaw" reg="0x406000C4" type="Int"/>
+  <cmd name="AcquisitionAuto" reg="0x406000E0" type="String">
+    <Combo StringValue="Off" IntValue="0"/>
+    <Combo StringValue="Once" IntValue="1"/>
+    <Combo StringValue="Continuous" IntValue="2"/>
+  </cmd>
+  <cmd name="DeviceDNA" reg="0x4060EF00" type="String"/>
+</root>

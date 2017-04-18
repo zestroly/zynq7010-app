@@ -1,0 +1,17 @@
+{
+    Param: {
+        camera: {
+            AnalogControls:{
+                Gainauto:{
+                    cell:{
+                        value:once,
+                        type:string,
+                        combo:['off',]
+                    }
+
+                }
+            }
+        }
+
+    }
+}

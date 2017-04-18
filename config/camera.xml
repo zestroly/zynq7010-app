@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Param ErrorCode="0">
+  <camera>
+    <AnalogControls>
+      <GainAuto Value="Off" Type="String" Combo="Off;Once;Continuous"/>
+      <GainSelector Value="Digital" Type="String" Combo="Digital;Analog"/>
+      <GainRaw Value="0" Type="Number" Decimals="0" Category="Input" MinValue="0" MaxValue="63" Control="1"/>
+      <GammaEnable Value="Disable" Type="String" Combo="Disable;Enable"/>
+      <GammaSelector Value="User" Type="String" Combo="User;sRgb"/>
+    </AnalogControls>
+    <ImageFormatControls>
+      <PixelFormat Value="Mono 8" Type="String" Combo="Mono 8;Mono 12;YUV 422"/>
+      <PixelSize Value="8 Bits/Pixel" Type="String"/>
+      <PixelColorFilter Value="No Filter" Type="String"/>
+      <ReverseX Value="False" Type="Bool"/>
+      <ReverseY Value="False" Type="Bool"/>
+      <TestImageSelector Value="Test Image Off" Type="String" Combo="Test Image Off;Test Image 1;Test Image 2"/>
+    </ImageFormatControls>
+    <AOIControls>
+      <Width Value="1280" Type="Number" Decimals="0" MaxValue="1280" MinValue="1"/>
+      <Height Value="1024" Type="Number" Decimals="0" MaxValue="1024" MinValue="1"/>
+      <OffsetX Value="6" Type="Number" Decimals="0" MaxValue="1680" MinValue="1"/>
+      <OffsetY Value="6" Type="Number" Decimals="0" MaxValue="1680" MinValue="1"/>
+    </AOIControls>
+    <AcquisitionControls>
+      <ExposureAuto Value="off" Type="String" Combo="off;once;continuous"/>
+      <ExposureTimeRaw Value="640" Type="Number" Decimals="0" MaxValue="999985" MixValue="35"/>
+    </AcquisitionControls>
+    <TriggerControls>
+      <AcquisitionAuto Value="Off" Type="String" Combo="Off;Once;Continuous"/>
+    </TriggerControls>
+    <DeviceInformation>
+      <DeviceDNA Value="74b58430d90854-000A35001E53" Type="String" Mode="ReadOnly"/>
+      <Method Value="dhcp" Type="String" Mode="ReadOnly">
+        <Address Value="" Type="String" Mode="ReadOnly"/>
+      </Method>
+    </DeviceInformation>
+  </camera>
+</Param>
