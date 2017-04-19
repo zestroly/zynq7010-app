@@ -25,6 +25,17 @@ XiPictureDriver::XiPictureDriver()
            mPicture->Fb2VirtualAddress = (char*)mPicture->VirtualAddress + 0x400000;
            mPicture->Fb3VirtualAddress = (char*)mPicture->VirtualAddress + 0x800000;
            mPicture->Fb4VirtualAddress = (char*)mPicture->VirtualAddress + 0xC00000;
+
+           //分配0x1F00,0000 ~ 0x2000,0000内存块
+           int loop;
+           for(loop = 0; loop < 4; loop++)
+           {
+               DDrDataBuff[loop].Index    = loop+1;
+               DDrDataBuff[loop].Size     = 0x400000;
+               DDrDataBuff[loop].Pointer  = (char*)mPicture->VirtualAddress+0x1000000+0x400000*loop;
+               DDrDataBuff[loop].isValid  = true;
+           }
+
         }else{
             printf("error:Xipicture mmap!");
         }
@@ -38,9 +49,9 @@ XiPictureDriver::XiPictureDriver()
         printf("open XiAxi dev fail\n");
     else{
         mPicture->AxiVirtualAddress = mmap(NULL, mPicture->AxiPhysLength,
-            PROT_READ|PROT_WRITE,
-            MAP_SHARED,
-            mPicture->AxiHandler , 0);
+                PROT_READ|PROT_WRITE,
+                MAP_SHARED,
+                mPicture->AxiHandler , 0);
         if(mPicture->AxiVirtualAddress != NULL)
         {
             mPicture->AxiInt = (volatile unsigned int*)mPicture->AxiVirtualAddress;
@@ -121,7 +132,7 @@ int XiPictureDriver::getPictureBuff(int Number, char** buff)
 
 void XiPictureDriver::softTrigger()
 {
-   if(mPicture->AxiHandler < 0)
+    if(mPicture->AxiHandler < 0)
         return;
     *(mPicture->AxiInt + 0xE4/4) = 1;
 }
@@ -163,14 +174,14 @@ void XiPictureDriver::lockBuff(uint8_t& BuffNo)
     uint32_t status = *(mPicture->AxiInt+0xD8/4);
     *(mPicture->AxiInt+0xD8/4) = status|(0x10<<BuffNo);
     //    fsync(mPicture->AxiHandler);
-//    printf("lock,D8:%x\n", *(mPicture->AxiInt+0xD8/4) );
+    //    printf("lock,D8:%x\n", *(mPicture->AxiInt+0xD8/4) );
 }
 
 void XiPictureDriver::unlockBuff(uint8_t& BuffNo)
 {
     uint32_t status = *(mPicture->AxiInt+0xD8/4);
     *(mPicture->AxiInt+0xD8/4) = status|(0x1<<BuffNo);
-//    printf("unlock,D8:%x\n", *(mPicture->AxiInt+0xD8/4) );
+    //    printf("unlock,D8:%x\n", *(mPicture->AxiInt+0xD8/4) );
     //fsync(mPicture->AxiHandler);
 }
 
@@ -222,64 +233,6 @@ void XiPictureDriver::ImageThread(XiPictureDriver* PictureDriver)
 }
 
 
-int XiPictureDriver::BlockModule()
-{
-    unsigned short signValue;
-    unsigned short signRow;
-    unsigned short signColBegin;
-    unsigned short signColEnd;
-
-    unsigned int RawCount;
-    unsigned int RawDataL;
-    unsigned int RawDataH;
-
-    unsigned int modulestatus = (*(mPicture->AxiInt+0x300/4));
-
-    std::cout<<"0x300:"<<modulestatus<<std::endl;
-
-    if( (modulestatus&(1<<0)) == 1 )
-    {
-        if( ((*(mPicture->AxiInt+0x308/4))&(1<<1)) == 1 )
-            return -2;
-
-        std::cout<<"0x308:"<<*(mPicture->AxiInt+0x308/4)<<std::endl;
-        RawCount = *(mPicture->AxiInt+0x30C/4);
-        std::cout<<"0x30C:"<<RawCount<<std::endl;
-        if( ((*(mPicture->AxiInt+0x308/4))&(1<<0)) == 1 )
-        {
-            for(int i =0 ; i < RawCount ; i++)
-            {
-                signColEnd    = (*(mPicture->AxiInt+0x310/4) & 0xFFFF);
-                signColBegin  = (*(mPicture->AxiInt+0x310/4) & 0xFFFF);
-                signRow       = (*(mPicture->AxiInt+0x310/4) & 0xFFFF);
-                signValue     = (*(mPicture->AxiInt+0x310/4) & 0xFFFF);
-                std::cout<<signValue <<":"<<signRow<<":"<<signColBegin << ":"<<signColEnd<<std::endl;
-            }
-        }
-
-        //读取完毕后，清理状态;
-        *(mPicture->AxiInt+0x300/4) = (1<<1);
-    }else
-        return -1;  //no block module or no enable
-    return 0;
-
-}
-
-
-bool XiPictureDriver::enableBlockModule(bool enable)
-{
-    unsigned int status= *(mPicture->AxiInt+0x300/4);
-    if(enable)
-        *(mPicture->AxiInt+0x300/4) = (status|(1<<0));
-    else
-        *(mPicture->AxiInt+0x300/4) = (status&(~(0x1)));
-
-    if( ((*(mPicture->AxiInt+0x300/4))&(1<<0)) == 1 )
-        return true;
-    else
-        return false;
-}
-
 
 void XiPictureDriver::setRegisterValue(uint32_t offset, uint32_t value)
 {
@@ -292,6 +245,22 @@ uint32_t XiPictureDriver::getRegisterValue(uint32_t offset)
 }
 
 
+char* XiPictureDriver::AllocDataBuff(uint8_t index)
+{
+    if(index >=4)
+        return NULL;
+
+    DDrDataBuff[index].isValid = false;
+    return DDrDataBuff[index].Pointer;
+}
+
+void XiPictureDriver::FreeDataBuff(uint8_t index)
+{
+    if(index >=4)
+        return;
+    DDrDataBuff[index].isValid = true;
+
+}
 
 
 }

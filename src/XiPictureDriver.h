@@ -38,8 +38,6 @@ typedef struct _Tpicture{
    unsigned int AxiPhysAddress;
    volatile unsigned int* AxiInt;
    void* AxiVirtualAddress;
-
-
 }Tpicture;
 
 typedef struct _ImageType{
@@ -48,6 +46,14 @@ typedef struct _ImageType{
     uint32_t imagelen;
     unsigned char* imagebuff;
 }TImageType;
+
+typedef struct _TFbuffInfo{
+    uint32_t Index;   //内存块索引号
+    uint32_t Size;    //内存块大小
+    char*    Pointer; //内存块指针
+    bool     isValid; //是否可用
+    std::string name;
+}TFbuffInfo;
 
 
 typedef void FHandler(TImageType* info);
@@ -70,6 +76,9 @@ class XiPictureDriver{
         bool mExitThread;
         FHandler *workfun;
 
+        TFbuffInfo DDrDataBuff[4];
+
+
     public:
         void setRegisterValue(uint32_t address, uint32_t value);
         uint32_t getRegisterValue(uint32_t address);
@@ -80,11 +89,13 @@ class XiPictureDriver{
         int getPictureBuff(int Number, char** buff);
         static void ImageThread(XiPictureDriver* PictureDriver);
         uint32_t getImageBuff(unsigned char** buff);
+
         XiPictureDriver();
         ~XiPictureDriver();
 
-        int BlockModule();
-        bool enableBlockModule(bool enable);
+        char* AllocDataBuff(uint8_t index);
+        void   FreeDataBuff(uint8_t index);
+
         friend class XiImageDevice;
 
 };

@@ -11,6 +11,15 @@
 #define MIRROR_SOURCE   (1<<4)
 
 namespace Xilinx{
+
+typedef struct {
+    uint32_t r;
+    uint32_t cb;
+    uint32_t ce;
+}Hrun;
+
+
+
 class XiImageDevice{
     public:
         typedef struct _ImageInformation{
@@ -54,10 +63,10 @@ class XiImageDevice{
             std::cout<<pNode->name<<std::endl;
             std::cout<<pNode->Mode<<std::endl;
             pNode->funcallback(NULL);
-
         }
 
         //BlockModule
+        int getHrunCount(TImageType *Image, uint8_t thresholdvalue);
         bool enableBlockModule(bool enable=true);
         int BlockModule();
         bool loopBlockModule();

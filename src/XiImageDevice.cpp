@@ -54,59 +54,49 @@ uint32_t XiImageDevice::getRegisterValue(uint32_t address)
     return mPictureDriver->getRegisterValue(address);
 }
 
-int XiImageDevice::BlockModule()
+int XiImageDevice::getHrunCount(TImageType *Image, uint8_t thresholdvalue)
 {
-    unsigned int status;
-    unsigned short signValue;
-    unsigned short signRow;
-    unsigned short signColBegin;
-    unsigned short signColEnd;
-
-    unsigned int RawCount;
-    unsigned int RawDataL;
-    unsigned int RawDataH;
-
-    unsigned int modulestatus = getRegisterValue(0x300);
-
-    printf("0x328:%#x\n", getRegisterValue(0x328));
-    printf("0x32C:%#x\n\n\n", getRegisterValue(0x32C));
     //清理Blob状态
     setRegisterValue(0x300, 0x2);
-
     //设置阀值
-    setRegisterValue(0x304, 120);
+    setRegisterValue(0x304, 100);
 
     //设置图片源
-    if(0)
+    if(Image == NULL)
         setRegisterValue(0x31C, 0);
     else{
         setRegisterValue(0x31C, 1);
-        setRegisterValue(0x320, 0x1E000000);
-        setRegisterValue(0x328, 1280);
-        setRegisterValue(0x32C, 1024);
+        memcpy(mPictureDriver->AllocDataBuff(0) , Image->imagebuff, Image->imagelen);
+        setRegisterValue(0x320, 0x1F000000);
+        setRegisterValue(0x328, Image->width);
+        setRegisterValue(0x32C, Image->height);
     }
 
     //设置接受地址
-    setRegisterValue(0x324, 0x1F000000);
+    setRegisterValue(0x324, 0x1F400000);
 
     //开始Blob处理
     setRegisterValue(0x300, 0x1);
 
-    printf("0x300:%#x\n", getRegisterValue(0x300));
-    printf("0x304:%d\n", getRegisterValue(0x304));
-    printf("0x308:%#x\n", getRegisterValue(0x308));
-    printf("0x31C:%#x\n", getRegisterValue(0x31C));
-    printf("0x320:%#x\n", getRegisterValue(0x320));
-    printf("0x324:%#x\n", getRegisterValue(0x324));
-    printf("0x328:%#x\n", getRegisterValue(0x328));
-    printf("0x32C:%#x\n", getRegisterValue(0x32C));
-
+    printf("get 0x300:%#x\n", getRegisterValue(0x300));
+    printf("get 0x304:%d\n", getRegisterValue(0x304));
+    printf("get 0x308:%#x\n", getRegisterValue(0x308));
+    printf("get 0x31C:%#x\n", getRegisterValue(0x31C));
+    printf("get 0x320:%#x\n", getRegisterValue(0x320));
+    printf("get 0x324:%#x\n", getRegisterValue(0x324));
+    printf("get 0x328:%#x\n", getRegisterValue(0x328));
+    printf("get 0x32C:%#x\n", getRegisterValue(0x32C));
 
     //判断是否完成
+    unsigned int usetime = 0;
+    unsigned int timeout = 100000;
     while(!(getRegisterValue(0x308)&0x1))
     {
-        usleep(500*1000);
+        usleep(1000);
+        usetime += 1000;
         printf("0x308:%#x\n", getRegisterValue(0x308));
+    //    if(usetime > timeout)
+   //         break;
     }
 
     //判断是否溢出
@@ -115,39 +105,19 @@ int XiImageDevice::BlockModule()
     //查看run总数
     std::cout<<"run count:"<<(getRegisterValue(0x30C))<<std::endl;
 
-    return 0;
-
-    std::cout<<"0x300:"<<modulestatus<<std::endl;
-
-    if( (modulestatus&(1<<0)) == 1 )
+    if(usetime > timeout)
     {
-        if( (getRegisterValue(0x308)&(1<<1)) == 1 )
-            return -2;
+        std::cout<<"超时!"<<std::endl;
+        return -1; //超时，未完全处理
+    }
+    return getRegisterValue(0x30C);
+}
 
-        std::cout<<"0x308:"<<getRegisterValue(0x308)<<std::endl;
-        RawCount = getRegisterValue(0x30C);
-        std::cout<<"0x30C:"<<RawCount<<std::endl;
-        if( (getRegisterValue(0x308)&(1<<0)) == 1 )
-        {
-            for(int i =0 ; i < RawCount ; i++)
-            {
-                signColEnd    = getRegisterValue(0x310) & 0xFFFF;
-                signColBegin  = getRegisterValue(0x310) & 0xFFFF;
-                signRow       = getRegisterValue(0x310) & 0xFFFF;
-                signValue     = getRegisterValue(0x310) & 0xFFFF;
-                std::cout<<signValue <<":"<<signRow<<":"<<signColBegin << ":"<<signColEnd<<std::endl;
-            }
-        }
-
-        //读取完毕后，清理状态;
-        status = getRegisterValue(0x300);
-        setRegisterValue(0x300, status | (1<<1));
-        status = getRegisterValue(0x300);
-        std::cout<<"aften:"<<status<<std::endl;
-    }else
-        return -1;  //no block module or no enable
+int XiImageDevice::BlockModule()
+{
+    getHrunCount(NULL,180);
+    mPictureDriver->AllocDataBuff(1);
     return 0;
-
 }
 
 
