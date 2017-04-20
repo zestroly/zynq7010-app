@@ -10,6 +10,8 @@ class XiDriver{
     public:
         XiDriver();
         ~XiDriver();
+        int BlockModule(FEventType* callback, TImageType* Image = NULL);
+        int BlockModule(TBlockInfo& BlockInfo,TImageType* Image = NULL);
 
     private:
         XiImageDevice *ImageDevice;

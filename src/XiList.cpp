@@ -1,23 +1,27 @@
 #include "XiList.h"
 
+#include "XiLog.h"
+
 namespace Xilinx {
 
 XiList::XiList()
 {
-    std::cout<<"Create XiList"<<std::endl;
+    LOG(INFO_LEVEL, "start ..构造");
     NodeThread = new std::thread(Eventloop, this);
+    LOG(INFO_LEVEL, "end   ..构造");
 }
 
 
 XiList::~XiList()
 {
+    LOG(INFO_LEVEL, "start ..虚构");
     TeminntionThread();
     NodeThread->join();
     delete NodeThread;
 
     if(!Nodes.empty())
         Nodes.clear();
-    std::cout<<"Destroy XiList"<<std::endl;
+    LOG(INFO_LEVEL, "end   ..虚构");
 }
 
 void XiList::TeminntionThread()

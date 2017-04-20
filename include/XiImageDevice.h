@@ -18,6 +18,11 @@ typedef struct {
     uint32_t ce;
 }Hrun;
 
+typedef struct {
+    int status;
+    uint32_t count;
+    Hrun *buff;
+}TBlockInfo;
 
 
 class XiImageDevice{
@@ -46,6 +51,8 @@ class XiImageDevice{
 
         void setRegisterValue(uint32_t address, uint32_t value);
         uint32_t getRegisterValue(uint32_t address);
+
+
         //设置回调函数
         void addModule(std::string Name, FEventType* callback, void *pdata);
 
@@ -53,7 +60,6 @@ class XiImageDevice{
         {
             TListNode* pNode = (TListNode*)p;
             XiImageDevice* pdata = (XiImageDevice*)pNode->pXiImageDevice;
-            //printf("111:%d\n", pdata->getRegisterValue(0x80));
             return true;
         }
 
@@ -66,9 +72,17 @@ class XiImageDevice{
         }
 
         //BlockModule
+        int BlockModule(FEventType* callback, TImageType* Image = NULL);
+        int BlockModule(TBlockInfo& BlockInfo,TImageType* Image = NULL);
+        bool isBlockModuleWorking;
+        bool enableBlockModule();
+        void disableBlockModule();
+
+        //使能模块
+
         int getHrunCount(TImageType *Image, uint8_t thresholdvalue);
-        bool enableBlockModule(bool enable=true);
         int BlockModule();
+
         bool loopBlockModule();
 
         //镜像Mirror

@@ -1,10 +1,12 @@
 #include "XiPictureDriver.h"
 
+#include "XiLog.h"
+
 namespace Xilinx{
 
 XiPictureDriver::XiPictureDriver()
 {
-
+    LOG(INFO_LEVEL, "start ..构造");
     mPicture = new Tpicture;
     memset(mPicture, 0, sizeof(Tpicture));
 
@@ -13,7 +15,9 @@ XiPictureDriver::XiPictureDriver()
 
     mPicture->Handler = open("/dev/Xipicture", O_RDWR|O_SYNC);
     if(mPicture->Handler < 0)
-        printf("open Xipicture dev fail\n");
+    {
+        LOG(ERROR_LEVEL, "open Xipicture dev fail");
+    }
     else{
         mPicture->VirtualAddress = mmap(NULL, mPicture->PhysLength,
             PROT_READ|PROT_WRITE,
@@ -37,16 +41,17 @@ XiPictureDriver::XiPictureDriver()
            }
 
         }else{
-            printf("error:Xipicture mmap!");
+            LOG(ERROR_LEVEL, "Xipicture mmap!");
         }
     }
-
 
     mPicture->AxiPhysLength = 0x20000;
     mPicture->AxiPhysAddress = 0x40600000;
     mPicture->AxiHandler = open("/dev/XiAxi", O_RDWR|O_SYNC);
     if(mPicture->AxiHandler < 0)
-        printf("open XiAxi dev fail\n");
+    {
+        LOG(ERROR_LEVEL, "open XiAxi dev fail");
+    }
     else{
         mPicture->AxiVirtualAddress = mmap(NULL, mPicture->AxiPhysLength,
                 PROT_READ|PROT_WRITE,
@@ -56,7 +61,7 @@ XiPictureDriver::XiPictureDriver()
         {
             mPicture->AxiInt = (volatile unsigned int*)mPicture->AxiVirtualAddress;
         }else{
-            printf("error:Axi mmap!");
+            LOG(ERROR_LEVEL, "Axi mmap!");
         }
     }
 
@@ -64,11 +69,12 @@ XiPictureDriver::XiPictureDriver()
     workfun = NULL;
     mthreadWork = true;
     mthread = new std::thread(ImageThread, this);
-
+    LOG(INFO_LEVEL, "end   ..构造");
 }
 
 XiPictureDriver::~XiPictureDriver()
 {
+    LOG(INFO_LEVEL, "start ..虚构");
     mthreadWork = false;
     mthread->join();
     delete mthread;
@@ -98,7 +104,7 @@ XiPictureDriver::~XiPictureDriver()
         delete mPicture;
         mPicture = NULL;
     }
-    printf("destroy XiPictureDriver...\n");
+    LOG(INFO_LEVEL, "end   ..虚构");
 }
 
 

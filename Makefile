@@ -1,4 +1,3 @@
-
 LIBTARDIR=lib
 
 BASEDIR=$(PWD)
@@ -8,11 +7,12 @@ INCLUDE= -Iinclude
 LFLAGS= -shared -Wl,-soname,libXiDriver.so
 CFLAGS= -pipe -g -Wall -W -fPIC
 CXXFLAGS=-pipe -fPIC -std=c++11
-LIBS    = -lxml2 -pthread
+LIBS    = -lxml2 -pthread -llog4cpp
 
 TARGET0  =$(LIBTARDIR)/libXiDriver.so
 SRCDIR  = src
 OBJECTS = $(SRCDIR)/XiPictureDriver.o \
+		  $(SRCDIR)/XiLog.o \
 		  $(SRCDIR)/XiImageDevice.o \
 		  $(SRCDIR)/XiList.o \
 		  $(SRCDIR)/XiDriver.o \
@@ -45,7 +45,7 @@ test:$(testobjtemp)
 TESTCXXFLAGS = -Iinclude -Llib -std=c++11 -Wl,--rpath=./ -lXiDriver
 
 bin/Picture:test/Picture.o
-	$(CXX) $^ -o $@ $(TESTCXXFLAGS) -lopencv_core -lopencv_highgui -ljrtp
+	$(CXX) $^ -o $@ $(TESTCXXFLAGS) -lopencv_core -lopencv_highgui -ljrtp 
 
 bin/ImageDevice:test/ImageDevice.o
 	$(CXX) $^ -o $@ $(TESTCXXFLAGS)

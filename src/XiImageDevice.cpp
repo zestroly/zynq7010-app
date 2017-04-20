@@ -1,22 +1,29 @@
 #include "XiImageDevice.h"
 #include <sys/time.h>
+
+#include "XiLog.h"
+
 namespace Xilinx{
 
 XiImageDevice::XiImageDevice()
 {
-    std::cout<<"Create class XiImageDevice."<<std::endl;
+    LOG(INFO_LEVEL, "start ..构造");
     mPictureDriver = new XiPictureDriver;
 
     mEventList = new XiList;
+
+    isBlockModuleWorking = false;
+
+    LOG(INFO_LEVEL, "end   ..构造");
 }
 
 XiImageDevice::~XiImageDevice()
 {
+    LOG(INFO_LEVEL, "start ..虚构");
     delete mEventList;
-
     delete mPictureDriver;
     mPictureDriver = NULL;
-    std::cout<<"Destroy class XiImageDevice."<<std::endl;
+    LOG(INFO_LEVEL, "end   ..虚构");
 }
 
 int XiImageDevice::getWidth()
@@ -113,6 +120,31 @@ int XiImageDevice::getHrunCount(TImageType *Image, uint8_t thresholdvalue)
     return getRegisterValue(0x30C);
 }
 
+
+int XiImageDevice::BlockModule(FEventType* callback, TImageType* Image)
+{
+#if 0
+    TListNode lnode;
+    lnode.name="BlockModule";
+    lnode.pCondition     = testModule; //判断条件
+    lnode.pExecute       = testModuleExec;
+    lnode.funcallback    = callback;
+    lnode.Mode           = "continue";
+    lnode.pXiImageDevice = this;
+    lnode.pdata          = pdata;
+    gettimeofday(&lnode.jointime, NULL);
+    mEventList->addEvent(lnode);
+#endif
+    return 0;
+}
+
+int XiImageDevice::BlockModule(TBlockInfo& BlockInfo,TImageType* Image)
+{
+
+    return 0;
+}
+
+
 int XiImageDevice::BlockModule()
 {
     getHrunCount(NULL,180);
@@ -121,19 +153,17 @@ int XiImageDevice::BlockModule()
 }
 
 
-bool XiImageDevice::enableBlockModule(bool enable)
+bool XiImageDevice::enableBlockModule()
 {
-    unsigned int status= getRegisterValue(0x300);
-    if(enable)
-        setRegisterValue(0x300, (status|(1<<0)));
-    else
-        setRegisterValue(0x300, (status&(~(0x1))));
 
-    if( (getRegisterValue(0x300)&(1)) == 1 )
-        return true;
-    else
-        return false;
 }
+
+void XiImageDevice::disableBlockModule()
+{
+
+
+}
+
 
 bool XiImageDevice::loopBlockModule()
 {
@@ -274,7 +304,6 @@ void XiImageDevice::setFbValue(int buffno, char value, int len)
             break;
     }
     delete[] buff;
-
 }
 
 
