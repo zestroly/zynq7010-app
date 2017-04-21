@@ -53,9 +53,10 @@ void XiList::removeEvent(TListNode& Node)
 void XiList::Eventloop(XiList *xlist)
 {
     xlist->workThread = true;
+    LOG(INFO_LEVEL, "开始 XiList 循环事件");
     while(xlist->workThread)
     {
-        usleep(5000);
+        usleep(1000);
         struct timeval currnetime;
         gettimeofday(&currnetime, NULL);
         xlist->NodeMutex.lock();
@@ -71,6 +72,8 @@ void XiList::Eventloop(XiList *xlist)
         }
         xlist->NodeMutex.unlock();
     }
+    LOG(INFO_LEVEL, "结束 XiList 循环事件");
+
 }
 
 

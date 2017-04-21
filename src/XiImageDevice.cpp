@@ -51,6 +51,19 @@ uint32_t XiImageDevice::getImage(unsigned char** buff)
     mPictureDriver->getImage(buff);
 }
 
+void* XiImageDevice::GrabPicture()
+{
+    //判断当前模式，连续，还是触发
+    uint32_t status = getRegisterValue(0xE0);
+    std::cout<<status<<std::endl;
+    if(status == 1 || status == 0)//触发模式
+    {
+
+    }else if(status == 2 ){ //连续模式
+        return NULL;
+    }
+}
+
 void XiImageDevice::setRegisterValue(uint32_t address, uint32_t value)
 {
     mPictureDriver->setRegisterValue(address, value);
@@ -61,101 +74,121 @@ uint32_t XiImageDevice::getRegisterValue(uint32_t address)
     return mPictureDriver->getRegisterValue(address);
 }
 
-int XiImageDevice::getHrunCount(TImageType *Image, uint8_t thresholdvalue)
+bool XiImageDevice::BlockModuleCondition(void* p)
+{
+    TListNode* pNode = (TListNode*)p;
+    XiImageDevice* pImageDevice = (XiImageDevice*)pNode->pXiImageDevice;
+
+    if(!(pImageDevice->getRegisterValue(0x308)&0x1))
+        return false;
+    else
+        return true;
+}
+
+void XiImageDevice::BlockModuleExec(void *p)
+{
+    TListNode* pNode = (TListNode*)p;
+    XiImageDevice* pImageDevice = (XiImageDevice*)pNode->pXiImageDevice;
+
+    TBlockInfo *pTBlockInfo = new TBlockInfo;
+
+    //判断是否溢出
+    if((pImageDevice->getRegisterValue(0x308)&0x2)==0x2)
+    {
+        pTBlockInfo->status = RE_BLOCKMODULE_BUSY;
+    }else{
+        pTBlockInfo->status = RE_BLOCKMODULE_SUCCESS;
+    }
+
+    //查看run总数
+    pTBlockInfo->count = pImageDevice->getRegisterValue(0x30C);
+    pTBlockInfo->buff  = (Hrun*)pImageDevice->mPictureDriver->AllocDataBuff(1);
+    pNode->funcallback(pTBlockInfo);
+
+    delete pTBlockInfo;
+
+    //清理状态，为下次准备
+    pImageDevice->setRegisterValue(0x300, 0x2);
+    pImageDevice->setRegisterValue(0x300, 0x1);
+}
+
+int XiImageDevice::BlockModule(uint8_t thresholdvalue, TBlockInfo& BlockInfo,TImageType* Image)
+{
+    if(isBlockModuleWorking == true)
+        return RE_BLOCKMODULE_BUSY;
+
+    //使能模块
+    enableBlockModule(Image, 160);
+
+    while(!(getRegisterValue(0x308)&0x1))
+    {
+        usleep(1000);
+    }
+
+    //判断是否溢出
+    if((getRegisterValue(0x308)&0x2)==0x2)
+    {
+        BlockInfo.status = RE_BLOCKMODULE_BUSY;
+    }else{
+        BlockInfo.status = RE_BLOCKMODULE_SUCCESS;
+    }
+
+    //查看run总数
+    BlockInfo.count = getRegisterValue(0x30C);
+    BlockInfo.buff  = (Hrun*)mPictureDriver->AllocDataBuff(1);
+
+    isBlockModuleWorking = false;
+    return 0;
+}
+
+int XiImageDevice::BlockModule(uint8_t thresholdvalue, FEventType* callback, TImageType* Image)
+{
+    if(isBlockModuleWorking == true)
+        return RE_BLOCKMODULE_BUSY;
+
+    //使能模块
+    enableBlockModule(Image, thresholdvalue);
+
+    //添加 检测队列中
+    TListNode lnode;
+    lnode.name="BlockModule";
+
+    lnode.pCondition     = BlockModuleCondition; //判断条件
+    lnode.pExecute       = BlockModuleExec;
+    lnode.funcallback    = callback;
+    lnode.Mode           = "continue";
+    lnode.pXiImageDevice = this;
+    gettimeofday(&lnode.jointime, NULL);
+    mEventList->addEvent(lnode);
+    return 0;
+}
+
+bool XiImageDevice::enableBlockModule(TImageType* Image, uint8_t thresholdvalue)
 {
     //清理Blob状态
     setRegisterValue(0x300, 0x2);
     //设置阀值
-    setRegisterValue(0x304, 100);
+    setRegisterValue(0x304, thresholdvalue);
 
     //设置图片源
     if(Image == NULL)
-        setRegisterValue(0x31C, 0);
+        setRegisterValue(0x31C, 0); //这是来源于sensor
     else{
         setRegisterValue(0x31C, 1);
+        //获取0x1F000000 的虚拟地址 ,并且拷贝数据到对应的地址
         memcpy(mPictureDriver->AllocDataBuff(0) , Image->imagebuff, Image->imagelen);
         setRegisterValue(0x320, 0x1F000000);
         setRegisterValue(0x328, Image->width);
         setRegisterValue(0x32C, Image->height);
     }
-
     //设置接受地址
     setRegisterValue(0x324, 0x1F400000);
 
     //开始Blob处理
     setRegisterValue(0x300, 0x1);
 
-    printf("get 0x300:%#x\n", getRegisterValue(0x300));
-    printf("get 0x304:%d\n", getRegisterValue(0x304));
-    printf("get 0x308:%#x\n", getRegisterValue(0x308));
-    printf("get 0x31C:%#x\n", getRegisterValue(0x31C));
-    printf("get 0x320:%#x\n", getRegisterValue(0x320));
-    printf("get 0x324:%#x\n", getRegisterValue(0x324));
-    printf("get 0x328:%#x\n", getRegisterValue(0x328));
-    printf("get 0x32C:%#x\n", getRegisterValue(0x32C));
-
-    //判断是否完成
-    unsigned int usetime = 0;
-    unsigned int timeout = 100000;
-    while(!(getRegisterValue(0x308)&0x1))
-    {
-        usleep(1000);
-        usetime += 1000;
-        printf("0x308:%#x\n", getRegisterValue(0x308));
-    //    if(usetime > timeout)
-   //         break;
-    }
-
-    //判断是否溢出
-    std::cout<<((getRegisterValue(0x308)&0x2)==0x2?"溢出":"未溢出")<<std::endl;
-
-    //查看run总数
-    std::cout<<"run count:"<<(getRegisterValue(0x30C))<<std::endl;
-
-    if(usetime > timeout)
-    {
-        std::cout<<"超时!"<<std::endl;
-        return -1; //超时，未完全处理
-    }
-    return getRegisterValue(0x30C);
-}
-
-
-int XiImageDevice::BlockModule(FEventType* callback, TImageType* Image)
-{
-#if 0
-    TListNode lnode;
-    lnode.name="BlockModule";
-    lnode.pCondition     = testModule; //判断条件
-    lnode.pExecute       = testModuleExec;
-    lnode.funcallback    = callback;
-    lnode.Mode           = "continue";
-    lnode.pXiImageDevice = this;
-    lnode.pdata          = pdata;
-    gettimeofday(&lnode.jointime, NULL);
-    mEventList->addEvent(lnode);
-#endif
-    return 0;
-}
-
-int XiImageDevice::BlockModule(TBlockInfo& BlockInfo,TImageType* Image)
-{
-
-    return 0;
-}
-
-
-int XiImageDevice::BlockModule()
-{
-    getHrunCount(NULL,180);
-    mPictureDriver->AllocDataBuff(1);
-    return 0;
-}
-
-
-bool XiImageDevice::enableBlockModule()
-{
-
+    isBlockModuleWorking = true;
+    return true;
 }
 
 void XiImageDevice::disableBlockModule()
@@ -165,27 +198,20 @@ void XiImageDevice::disableBlockModule()
 }
 
 
-bool XiImageDevice::loopBlockModule()
+bool XiImageDevice::testModule(void* p)
 {
-    setRegisterValue(0x304, 180);
-    while(1)
-    {
-        printf("************************************\n");
-        printf("0x300:%#x\n", getRegisterValue(0x300));
-        printf("0x304:%#x\n", getRegisterValue(0x304));
-        printf("0x308:%#x\n", getRegisterValue(0x308));
-        printf("0x30C:%#x\n", getRegisterValue(0x30C));
-
-        unsigned int status = getRegisterValue(0x300);
-        status |= (1<<1);
-        printf("will write 0x300:%#x\n", status);
-        setRegisterValue(0x300, status);
-
-        printf("-------------------------------------\n");
-        getchar();
-    }
+    TListNode* pNode = (TListNode*)p;
+    XiImageDevice* pImageDevice = (XiImageDevice*)pNode->pXiImageDevice;
+    return true;
 }
 
+void XiImageDevice::testModuleExec(void *p)
+{
+    TListNode* pNode = (TListNode*)p;
+    std::cout<<pNode->name<<std::endl;
+    std::cout<<pNode->Mode<<std::endl;
+    pNode->funcallback(NULL);
+}
 
 bool XiImageDevice::PictureMirror(uint8_t* dest, uint8_t* Src, TImageInformation &info)
 {
@@ -283,6 +309,7 @@ void XiImageDevice::addModule(std::string Name, FEventType* callback, void *pdat
         mEventList->addEvent(lnode);
     }
 }
+
 
 void XiImageDevice::setFbValue(int buffno, char value, int len)
 {

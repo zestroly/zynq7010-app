@@ -88,7 +88,6 @@ void testBlockModule()
 {
     Xilinx::XiImageDevice *ImageDevice =new Xilinx::XiImageDevice;
     std::cout<<"start test BlockModule ..."<<std::endl;
-    ImageDevice->BlockModule();
     std::cout<<"end   test BlockModule ..."<<std::endl;
     getchar();
     delete ImageDevice;
@@ -113,13 +112,4 @@ int main(int argc, char** argv)
         testBlockModule();
     return 0;
 
-
-    Xilinx::XiImageDevice *ImageDevice =new Xilinx::XiImageDevice;
-    ImageDevice->enableBlockModule();
-    sleep(1);
-    ImageDevice->loopBlockModule();
-    getchar();
-    delete ImageDevice;
-
-    return 0;
 }

@@ -79,3 +79,4 @@ clean:
 	rm $(testobjtemp) -rf
 	rm $(OBJECTS) -rf
 	rm $(TARGET0) -rf
+	rm include/* -rf

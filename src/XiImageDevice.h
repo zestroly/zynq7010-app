@@ -10,16 +10,22 @@
 #define MIRROR_Y        (1<<3)
 #define MIRROR_SOURCE   (1<<4)
 
+
+/*Block module return value */
+#define RE_BLOCKMODULE_SUCCESS   0
+#define RE_BLOCKMODULE_BUSY     -1
+
 namespace Xilinx{
 
 typedef struct {
+    uint32_t mark;
     uint32_t r;
     uint32_t cb;
     uint32_t ce;
 }Hrun;
 
 typedef struct {
-    int status;
+    uint32_t status;
     uint32_t count;
     Hrun *buff;
 }TBlockInfo;
@@ -40,8 +46,10 @@ class XiImageDevice{
         void registerImageCallback(FHandler* pfun);
         void softTrigger(); //软触发
         uint32_t getImage(unsigned char** buff);
+        void* GrabPicture();
 
         void setFbValue(int buffno, char value, int len);
+
     private:
         XiPictureDriver *mPictureDriver;
         XiList *mEventList;
@@ -52,38 +60,21 @@ class XiImageDevice{
         void setRegisterValue(uint32_t address, uint32_t value);
         uint32_t getRegisterValue(uint32_t address);
 
-
         //设置回调函数
         void addModule(std::string Name, FEventType* callback, void *pdata);
+        static bool testModule(void* p);
+        static void testModuleExec(void *p);
 
-        static bool testModule(void* p)
-        {
-            TListNode* pNode = (TListNode*)p;
-            XiImageDevice* pdata = (XiImageDevice*)pNode->pXiImageDevice;
-            return true;
-        }
-
-        static void testModuleExec(void *p)
-        {
-            TListNode* pNode = (TListNode*)p;
-            std::cout<<pNode->name<<std::endl;
-            std::cout<<pNode->Mode<<std::endl;
-            pNode->funcallback(NULL);
-        }
 
         //BlockModule
-        int BlockModule(FEventType* callback, TImageType* Image = NULL);
-        int BlockModule(TBlockInfo& BlockInfo,TImageType* Image = NULL);
+        int BlockModule(uint8_t thresholdvalue, FEventType* callback, TImageType* Image = NULL);
+        int BlockModule(uint8_t thresholdvalue, TBlockInfo& BlockInfo,TImageType* Image = NULL);
         bool isBlockModuleWorking;
-        bool enableBlockModule();
+        bool enableBlockModule(TImageType* Image, uint8_t thresholdvalue);
         void disableBlockModule();
+        static bool BlockModuleCondition(void* p);
+        static void BlockModuleExec(void *p);
 
-        //使能模块
-
-        int getHrunCount(TImageType *Image, uint8_t thresholdvalue);
-        int BlockModule();
-
-        bool loopBlockModule();
 
         //镜像Mirror
         bool enableMirror(bool enable);
