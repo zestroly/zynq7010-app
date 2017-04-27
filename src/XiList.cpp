@@ -56,7 +56,7 @@ void XiList::Eventloop(XiList *xlist)
     LOG(INFO_LEVEL, "开始 XiList 循环事件");
     while(xlist->workThread)
     {
-        usleep(1000);
+        usleep(1000 * 500);
         struct timeval currnetime;
         gettimeofday(&currnetime, NULL);
         xlist->NodeMutex.lock();

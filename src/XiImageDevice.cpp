@@ -3,27 +3,50 @@
 
 #include "XiLog.h"
 
+
+
 namespace Xilinx{
+
+struct _TSensorInfo{
+    char name[32];
+    uint32_t  offset;
+}SensorInfo[] = {
+    {"GainRaw",     0x0008 },
+    {"Gamma",       0x0028 },
+    {"Width",          0x0080 },
+    {"Height",         0x0090 },
+    {"OffsetX",        0x00A0 },
+    {"OffsetY",        0x00B0 },
+    {"ExposureTimeRaw", 0x00C4 },
+};
 
 XiImageDevice::XiImageDevice()
 {
     LOG(INFO_LEVEL, "start ..构造");
+    mSensorUpdate ();
     mPictureDriver = new XiPictureDriver;
-
     mEventList = new XiList;
-
     isBlockModuleWorking = false;
-
+    XiImageDeviceWorking = true;
     LOG(INFO_LEVEL, "end   ..构造");
 }
 
 XiImageDevice::~XiImageDevice()
 {
+    //XiImageDeviceWorking = false;
+     //usleep(1000*500);
+    Terminate ();
     LOG(INFO_LEVEL, "start ..虚构");
     delete mEventList;
     delete mPictureDriver;
     mPictureDriver = NULL;
+    mSensorClear ();
     LOG(INFO_LEVEL, "end   ..虚构");
+}
+
+void XiImageDevice::Terminate()
+{
+    XiImageDeviceWorking = false;
 }
 
 int XiImageDevice::getWidth()
@@ -51,14 +74,24 @@ uint32_t XiImageDevice::getImage(unsigned char** buff)
     mPictureDriver->getImage(buff);
 }
 
-void* XiImageDevice::GrabPicture()
+void* XiImageDevice:: GrabPicture()
 {
     //判断当前模式，连续，还是触发
     uint32_t status = getRegisterValue(0xE0);
-    std::cout<<status<<std::endl;
     if(status == 1 || status == 0)//触发模式
     {
-
+        //清理状态
+        uint8_t buffno = 0;
+        mPictureDriver->unlockBuff(buffno);
+        usleep(1000);
+        buffno = mPictureDriver->getReadBuffNo();
+        if(buffno  == 0  && mPictureDriver->mthreadWork)
+        {
+            mPictureDriver->lockBuff(buffno);
+            return mPictureDriver->getPictureBuff(buffno);
+        }else{
+            return NULL;
+        }
     }else if(status == 2 ){ //连续模式
         return NULL;
     }
@@ -73,6 +106,47 @@ uint32_t XiImageDevice::getRegisterValue(uint32_t address)
 {
     return mPictureDriver->getRegisterValue(address);
 }
+
+void XiImageDevice::mSensorUpdate()
+{
+    int i;
+    int size = sizeof(SensorInfo)/sizeof(struct _TSensorInfo );
+    for(i =0; i < size; i++)
+    {
+            mSensor.insert (std::pair<std::string, uint32_t>(SensorInfo[i].name,   SensorInfo[i].offset ));
+    }
+
+}
+
+void XiImageDevice::mSensorClear()
+{
+    mSensor.clear();
+}
+
+
+uint32_t XiImageDevice::GetSensorParam(const char* name)
+{
+        if(mSensor.find (name) != mSensor.end ())
+        {
+            return getRegisterValue (mSensor[name]);
+        }else{
+            LOG(INFO_LEVEL, "on this Param.");
+            return 0;
+        }
+}
+
+void XiImageDevice::SetSensorParam(const char* name, uint32_t value)
+{
+    if(mSensor.find (name) != mSensor.end ())
+    {
+        setRegisterValue (mSensor[name], value);
+    }else{
+        LOG(INFO_LEVEL, "on this Param.");
+    }
+
+}
+
+
 
 bool XiImageDevice::BlockModuleCondition(void* p)
 {
@@ -191,12 +265,38 @@ bool XiImageDevice::enableBlockModule(TImageType* Image, uint8_t thresholdvalue)
     return true;
 }
 
-void XiImageDevice::disableBlockModule()
+bool XiImageDevice::waitBlockModuleFinished()
 {
+    while(!(getRegisterValue(0x308)&0x1)  &&  XiImageDeviceWorking  )
+        usleep(1000);
 
-
+    if(XiImageDeviceWorking)
+        return true;
+    else
+        return false;
 }
 
+bool XiImageDevice::hasOverflow()
+{
+    //判断是否溢出
+    if((getRegisterValue(0x308)&0x2)==0x2)
+    {//溢出
+        return true;
+    }else{//未溢出
+        return false;
+    }
+}
+
+uint32_t XiImageDevice::BlockModuleRunCount()
+{
+    //查看run总数
+    return getRegisterValue(0x30C);
+}
+
+void* XiImageDevice::getHrunBuff()
+{
+    return mPictureDriver->AllocDataBuff(1);
+}
 
 bool XiImageDevice::testModule(void* p)
 {
@@ -211,6 +311,80 @@ void XiImageDevice::testModuleExec(void *p)
     std::cout<<pNode->name<<std::endl;
     std::cout<<pNode->Mode<<std::endl;
     pNode->funcallback(NULL);
+}
+
+bool XiImageDevice::clearMirror()
+{
+    setRegisterValue(0x400, 0x2);
+    return true;
+}
+
+bool XiImageDevice::setMirrorMode(int mode)
+{
+    if(mode == 0)
+        setRegisterValue(0x410, 0);
+    else
+        setRegisterValue(0x410, 0x1); //设置处理图片的来源为 soc
+    return true;
+}
+
+bool XiImageDevice::setMirrorX(bool enable)
+{
+    if(enable == true)
+            setRegisterValue(0x404, 1);
+    else
+         setRegisterValue(0x404, 0);
+    return true;
+}
+
+bool XiImageDevice::setMirrorY(bool enable)
+{
+    if(enable == true)
+            setRegisterValue(0x408, 1);
+    else
+         setRegisterValue(0x408, 0);
+    return true;
+}
+
+bool XiImageDevice::setMirrorImageWidth(int width)
+{
+    setRegisterValue(0x41C, width);  //设置宽度
+    return true;
+}
+
+bool XiImageDevice::setMirrorImageHeigth(int height)
+{
+    setRegisterValue(0x420, height);  //设置高度
+    return true;
+}
+
+bool XiImageDevice::setMirrorInputImage(void* buff, int size )
+{
+    setRegisterValue(0x414, 0x1F000000);  //处理前的地址
+   memcpy( mPictureDriver->PhyaddrToVirtualaddr (0x1F000000), buff, size);
+   return true;
+}
+
+bool XiImageDevice::setMirrorOutputPhyaddr(uint32_t phyaddr)
+{
+    setRegisterValue(0x418, phyaddr); //处理后的地址
+    return true;
+}
+
+void* XiImageDevice::getMirrorOutputVirturaladdr(uint32_t phyaddr)
+{
+    return mPictureDriver->PhyaddrToVirtualaddr(phyaddr);
+}
+
+bool XiImageDevice::waitMirrorModuleFinished()
+{
+     setRegisterValue(0x400, 0x1); //开始处理
+     while(!(getRegisterValue(0x40C) & 0x1) && XiImageDeviceWorking)
+         usleep(1000);
+     if(XiImageDeviceWorking)
+         return true;
+     else
+         return false;
 }
 
 bool XiImageDevice::PictureMirror(uint8_t* dest, uint8_t* Src, TImageInformation &info)
@@ -257,14 +431,14 @@ bool XiImageDevice::PictureMirror(uint8_t* dest, uint8_t* Src, TImageInformation
     std::cout<<"结束拷贝:"<<tv4.tv_sec<<"."<<tv4.tv_usec<<"---:"<<tv4.tv_usec-tv3.tv_usec<<std::endl;
 
     printf("Fb3 data: %x, %x , %x \n",
-            mPictureDriver->mPicture->Fb3VirtualAddress[0],
+           mPictureDriver->mPicture->Fb3VirtualAddress[0],
             mPictureDriver->mPicture->Fb3VirtualAddress[1000],
             mPictureDriver->mPicture->Fb3VirtualAddress[1280*1024-1]);
 
     std::cout<<"run time:"<<"---:"<<tv4.tv_usec-tv.tv_usec<<std::endl;
     printf("dest data: %x, %x , %x\n", dest[0], dest[1000], dest[1280*1024-1]);
     printf("Fb4 data: %x, %x , %x\n",
-            mPictureDriver->mPicture->Fb4VirtualAddress[0],
+           mPictureDriver->mPicture->Fb4VirtualAddress[0],
             mPictureDriver->mPicture->Fb4VirtualAddress[1000],
             mPictureDriver->mPicture->Fb4VirtualAddress[1280*1024-1]);
 
@@ -317,18 +491,18 @@ void XiImageDevice::setFbValue(int buffno, char value, int len)
     memset(buff, value, len);
     switch(buffno)
     {
-        case 1:
-            memcpy(mPictureDriver->mPicture->Fb1VirtualAddress ,buff,  len);
-            break;
-        case 2:
-            memcpy(mPictureDriver->mPicture->Fb2VirtualAddress ,buff,  len);
-            break;
-        case 3:
-            memcpy(mPictureDriver->mPicture->Fb3VirtualAddress ,buff,  len);
-            break;
-        case 4:
-            memcpy(mPictureDriver->mPicture->Fb4VirtualAddress ,buff,  len);
-            break;
+    case 1:
+        memcpy(mPictureDriver->mPicture->Fb1VirtualAddress ,buff,  len);
+        break;
+    case 2:
+        memcpy(mPictureDriver->mPicture->Fb2VirtualAddress ,buff,  len);
+        break;
+    case 3:
+        memcpy(mPictureDriver->mPicture->Fb3VirtualAddress ,buff,  len);
+        break;
+    case 4:
+        memcpy(mPictureDriver->mPicture->Fb4VirtualAddress ,buff,  len);
+        break;
     }
     delete[] buff;
 }

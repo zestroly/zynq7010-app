@@ -80,3 +80,5 @@ clean:
 	rm $(OBJECTS) -rf
 	rm $(TARGET0) -rf
 	rm include/* -rf
+bsp:
+	tar zcvf libdriver.tar.bz include lib doc

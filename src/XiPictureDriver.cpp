@@ -107,6 +107,32 @@ XiPictureDriver::~XiPictureDriver()
     LOG(INFO_LEVEL, "end   ..虚构");
 }
 
+ void* XiPictureDriver::getPictureBuff(int Number)
+ {
+     if(mPicture->VirtualAddress != NULL)
+     {
+         switch(Number)
+         {
+             case 0:
+                 return (void*)mPicture->Fb1VirtualAddress;
+                 break;
+             case 1:
+                 return (void*)mPicture->Fb2VirtualAddress;
+                 break;
+             case 2:
+                 return (void*)mPicture->Fb3VirtualAddress;
+                 break;
+             case 3:
+                 return (void*)mPicture->Fb4VirtualAddress;
+                 break;
+             default:
+                 return NULL;
+                 break;
+         }
+     }else{
+         return NULL;
+     }
+ }
 
 int XiPictureDriver::getPictureBuff(int Number, char** buff)
 {//根据Number ，获取buff地址
@@ -136,6 +162,12 @@ int XiPictureDriver::getPictureBuff(int Number, char** buff)
     }
 }
 
+ void   XiPictureDriver::clearPictureBuff(int Number) //清理状态
+{
+
+
+}
+
 void XiPictureDriver::softTrigger()
 {
     if(mPicture->AxiHandler < 0)
@@ -163,14 +195,15 @@ uint8_t XiPictureDriver::getReadBuffNo()
     uint32_t rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
     uint8_t  buffNo = ((rel>>4) & 0x3);
     uint8_t  buffstatus = (rel & 0xF);
-
+    printf("#### %x  %x\n", buffNo, buffstatus);
     while( mthreadWork && !buffstatus)
     {
-        usleep(1000);
+        usleep(500);
         rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
         buffNo = ((rel>>4) & 0x3);
         buffstatus = (rel & 0xF);
     }
+    printf("2*****  %x  %x\n", buffNo, buffstatus);
     return buffNo;
 }
 
@@ -179,16 +212,12 @@ void XiPictureDriver::lockBuff(uint8_t& BuffNo)
 {
     uint32_t status = *(mPicture->AxiInt+0xD8/4);
     *(mPicture->AxiInt+0xD8/4) = status|(0x10<<BuffNo);
-    //    fsync(mPicture->AxiHandler);
-    //    printf("lock,D8:%x\n", *(mPicture->AxiInt+0xD8/4) );
 }
 
 void XiPictureDriver::unlockBuff(uint8_t& BuffNo)
 {
     uint32_t status = *(mPicture->AxiInt+0xD8/4);
     *(mPicture->AxiInt+0xD8/4) = status|(0x1<<BuffNo);
-    //    printf("unlock,D8:%x\n", *(mPicture->AxiInt+0xD8/4) );
-    //fsync(mPicture->AxiHandler);
 }
 
 uint32_t XiPictureDriver::getImageBuff(unsigned char** buff)
@@ -266,6 +295,16 @@ void XiPictureDriver::FreeDataBuff(uint8_t index)
         return;
     DDrDataBuff[index].isValid = true;
 
+}
+
+void*   XiPictureDriver::PhyaddrToVirtualaddr(uint32_t Phyaddr)
+{
+   return (void*)( ((char*)mPicture->VirtualAddress) + (Phyaddr - mPicture->PhysAddress));
+}
+
+uint32_t XiPictureDriver::VirtualaddrToPhyaddr(void* Virtualaddr)
+{
+    return (mPicture->PhysAddress + ((char*)Virtualaddr - (char*)mPicture->VirtualAddress));
 }
 
 

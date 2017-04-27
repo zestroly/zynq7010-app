@@ -87,6 +87,9 @@ class XiPictureDriver{
         void lockBuff(uint8_t& BuffNo);
         uint8_t getReadBuffNo();
         int getPictureBuff(int Number, char** buff);
+        void* getPictureBuff(int Number);
+        void   clearPictureBuff(int Number);  //清理状态
+
         static void ImageThread(XiPictureDriver* PictureDriver);
         uint32_t getImageBuff(unsigned char** buff);
 
@@ -95,6 +98,8 @@ class XiPictureDriver{
 
         char* AllocDataBuff(uint8_t index);
         void   FreeDataBuff(uint8_t index);
+        void*     PhyaddrToVirtualaddr(uint32_t Phyaddr);
+        uint32_t VirtualaddrToPhyaddr(void* Virtualaddr);
 
         friend class XiImageDevice;
 
