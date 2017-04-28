@@ -191,7 +191,7 @@ void ImageCallbackSendPacket(Xilinx::TImageType*  info)
     std::cout<<std::endl;
 
     int templen = info->imagelen;
-    std::cout<<"***************"<<templen<<std::endl;
+
 
     session->SetDefaultPayloadType(88);
 
@@ -219,14 +219,15 @@ void ImageCallbackSendPacket(Xilinx::TImageType*  info)
         else{
             session->SendPacket(info->imagebuff+(info->imagelen - templen),templen);
             templen -= templen;
+             RTPTime::Wait(0.001);
         }
     }
 
-    //RTPTime::Wait(delay);
+    RTPTime::Wait(0.001);
     session->SetDefaultPayloadType(99);
-    session->SendPacket(sendInfo,8);
+    session->SendPacket(sendInfo, 8);
 
-    //  RTPTime::Wait(delay);
+   RTPTime::Wait(0.005);
 }
 
 void initRtp(const uint8_t remoteip[4])

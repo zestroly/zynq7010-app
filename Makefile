@@ -57,7 +57,7 @@ bin/t_date:test/t_date.o
 	$(CXX) $^ -o $@ $(TESTCXXFLAGS)
 
 bin/Driver:test/Driver.o
-	$(CXX) $^ -o $@ $(TESTCXXFLAGS)
+	$(CXX) $^ -o $@ $(TESTCXXFLAGS) -llog4cpp 
 
 bin/XmlDevice:test/XmlDevice.o
 	$(CXX) $^ -o $@ $(TESTCXXFLAGS) -lxml2

@@ -11,13 +11,13 @@ struct _TSensorInfo{
     char name[32];
     uint32_t  offset;
 }SensorInfo[] = {
-    {"GainRaw",     0x0008 },
-    {"Gamma",       0x0028 },
-    {"Width",          0x0080 },
-    {"Height",         0x0090 },
-    {"OffsetX",        0x00A0 },
-    {"OffsetY",        0x00B0 },
-    {"ExposureTimeRaw", 0x00C4 },
+{"GainRaw",     0x0008 },
+{"Gamma",       0x0028 },
+{"Width",          0x0080 },
+{"Height",         0x0090 },
+{"OffsetX",        0x00A0 },
+{"OffsetY",        0x00B0 },
+{"ExposureTimeRaw", 0x00C4 },
 };
 
 XiImageDevice::XiImageDevice()
@@ -34,7 +34,7 @@ XiImageDevice::XiImageDevice()
 XiImageDevice::~XiImageDevice()
 {
     //XiImageDeviceWorking = false;
-     //usleep(1000*500);
+    //usleep(1000*500);
     Terminate ();
     LOG(INFO_LEVEL, "start ..虚构");
     delete mEventList;
@@ -97,6 +97,28 @@ void* XiImageDevice:: GrabPicture()
     }
 }
 
+uint32_t  XiImageDevice::GrabPicture (uint8_t* buff,    uint32_t bufflen)
+{
+    uint32_t ImageMM, ImageSize = 0;
+    uint8_t buffNo = mPictureDriver->getReadBuffNo();
+    mPictureDriver->lockBuff(buffNo);
+    char* Imagebuff = NULL;
+    mPictureDriver->getPictureBuff(buffNo,  &Imagebuff);
+    if(Imagebuff != NULL)
+    {
+        ImageSize = mPictureDriver->getHeight () * mPictureDriver->getWidth ();
+        ImageMM = (ImageSize >= bufflen? bufflen:ImageSize);
+        memcpy(buff,  Imagebuff, ImageMM);
+        mPictureDriver->unlockBuff(buffNo);
+        return ImageMM;
+    }else{
+        mPictureDriver->unlockBuff(buffNo);
+        return -1;
+    }
+}
+
+
+
 void XiImageDevice::setRegisterValue(uint32_t address, uint32_t value)
 {
     mPictureDriver->setRegisterValue(address, value);
@@ -113,7 +135,7 @@ void XiImageDevice::mSensorUpdate()
     int size = sizeof(SensorInfo)/sizeof(struct _TSensorInfo );
     for(i =0; i < size; i++)
     {
-            mSensor.insert (std::pair<std::string, uint32_t>(SensorInfo[i].name,   SensorInfo[i].offset ));
+        mSensor.insert (std::pair<std::string, uint32_t>(SensorInfo[i].name,   SensorInfo[i].offset ));
     }
 
 }
@@ -126,13 +148,13 @@ void XiImageDevice::mSensorClear()
 
 uint32_t XiImageDevice::GetSensorParam(const char* name)
 {
-        if(mSensor.find (name) != mSensor.end ())
-        {
-            return getRegisterValue (mSensor[name]);
-        }else{
-            LOG(INFO_LEVEL, "on this Param.");
-            return 0;
-        }
+    if(mSensor.find (name) != mSensor.end ())
+    {
+        return getRegisterValue (mSensor[name]);
+    }else{
+        LOG(INFO_LEVEL, "on this Param.");
+        return 0;
+    }
 }
 
 void XiImageDevice::SetSensorParam(const char* name, uint32_t value)
@@ -331,18 +353,18 @@ bool XiImageDevice::setMirrorMode(int mode)
 bool XiImageDevice::setMirrorX(bool enable)
 {
     if(enable == true)
-            setRegisterValue(0x404, 1);
+        setRegisterValue(0x404, 1);
     else
-         setRegisterValue(0x404, 0);
+        setRegisterValue(0x404, 0);
     return true;
 }
 
 bool XiImageDevice::setMirrorY(bool enable)
 {
     if(enable == true)
-            setRegisterValue(0x408, 1);
+        setRegisterValue(0x408, 1);
     else
-         setRegisterValue(0x408, 0);
+        setRegisterValue(0x408, 0);
     return true;
 }
 
@@ -361,8 +383,8 @@ bool XiImageDevice::setMirrorImageHeigth(int height)
 bool XiImageDevice::setMirrorInputImage(void* buff, int size )
 {
     setRegisterValue(0x414, 0x1F000000);  //处理前的地址
-   memcpy( mPictureDriver->PhyaddrToVirtualaddr (0x1F000000), buff, size);
-   return true;
+    memcpy( mPictureDriver->PhyaddrToVirtualaddr (0x1F000000), buff, size);
+    return true;
 }
 
 bool XiImageDevice::setMirrorOutputPhyaddr(uint32_t phyaddr)
@@ -378,13 +400,13 @@ void* XiImageDevice::getMirrorOutputVirturaladdr(uint32_t phyaddr)
 
 bool XiImageDevice::waitMirrorModuleFinished()
 {
-     setRegisterValue(0x400, 0x1); //开始处理
-     while(!(getRegisterValue(0x40C) & 0x1) && XiImageDeviceWorking)
-         usleep(1000);
-     if(XiImageDeviceWorking)
-         return true;
-     else
-         return false;
+    setRegisterValue(0x400, 0x1); //开始处理
+    while(!(getRegisterValue(0x40C) & 0x1) && XiImageDeviceWorking)
+        usleep(1000);
+    if(XiImageDeviceWorking)
+        return true;
+    else
+        return false;
 }
 
 bool XiImageDevice::PictureMirror(uint8_t* dest, uint8_t* Src, TImageInformation &info)

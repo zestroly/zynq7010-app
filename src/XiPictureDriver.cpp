@@ -195,7 +195,7 @@ uint8_t XiPictureDriver::getReadBuffNo()
     uint32_t rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
     uint8_t  buffNo = ((rel>>4) & 0x3);
     uint8_t  buffstatus = (rel & 0xF);
-    printf("#### %x  %x\n", buffNo, buffstatus);
+  //  printf("#### %x  %x\n", buffNo, buffstatus);
     while( mthreadWork && !buffstatus)
     {
         usleep(500);
@@ -203,7 +203,7 @@ uint8_t XiPictureDriver::getReadBuffNo()
         buffNo = ((rel>>4) & 0x3);
         buffstatus = (rel & 0xF);
     }
-    printf("2*****  %x  %x\n", buffNo, buffstatus);
+  //  printf("2*****  %x  %x\n", buffNo, buffstatus);
     return buffNo;
 }
 

@@ -7,18 +7,37 @@
 
 #define FPGAMODULEMAXNAME 100
 
+
+namespace Xilinx{
+
 static char Fpga_Modules[][FPGAMODULEMAXNAME]={
     "BlockModule",
     "MirrorModule",
 };
 
 
-namespace Xilinx{
+struct _ErrModuleType{
+    Herror Number;
+    char  Msg[128];
+}ErrorModuleInfo[] = {
+    {MODULE_SUCCESS,  "successful."},
+    {MODULE_NOFIND_MODULE,  "no find module."},
+    {MODULE_NAME_IS_NULL,  "input name is null."},
+    {MODULE_NOFIND_PARAM,  "input param is no find."},
+    {MODULE_NOFIND_OBJECT,  "input object is no find."},
+    {MODULE_BLOCK_OVERFLOW,  "the block module result is overflow."},
+    {MODULE_BLOCK_TERMINATE,  "the block module was terminate with external."},
+    {MOUDLE_BLOCK_NOSET_THRESHVALUE,  "the block module of param (threshvalue)  not setting."},
+
+};
+
 
 XiDriver::XiDriver()
 {
+    AllocErrLog();
     LOG(INFO_LEVEL, "start ..构造");
     ImageDevice = new XiImageDevice;
+
     ModuleName = "";
     LOG(INFO_LEVEL, "end   ..构造");
 }
@@ -28,10 +47,14 @@ XiDriver::~XiDriver()
 {
     LOG(INFO_LEVEL, "start ..虚构");
     Terminate();
+
+    OutPutData.clear();
+    IntPutData.clear ();
     ModueMutex.lock ();
     ModueMutex.unlock();
     delete ImageDevice;
     ModuleName="";
+    DestroyErrLog();
     LOG(INFO_LEVEL, "end   ..虚构");
 }
 
@@ -40,14 +63,31 @@ void XiDriver::Terminate()
     ImageDevice->Terminate();
 }
 
-int XiDriver::GetWidth()
+void XiDriver::AllocErrLog()
 {
-    return ImageDevice->getWidth();
+    int i;
+    int size = sizeof(ErrorModuleInfo)/sizeof(struct _ErrModuleType );
+    for(i =0; i < size; i++)
+    {
+           ErrLog.insert (std::pair<Herror, char*>(ErrorModuleInfo[i].Number,   ErrorModuleInfo[i].Msg ));
+    }
+
 }
 
-int XiDriver::GetHeight()
+void XiDriver::DestroyErrLog()
 {
-    return ImageDevice->getHeight();
+    ErrLog.clear ();
+}
+
+
+const char* XiDriver::GetErrorMsg()
+{
+     if ( ErrLog.find (ErrNumber) != ErrLog.end () )
+     {
+         return ErrLog[ErrNumber];
+     }else{
+         return NULL;
+     }
 }
 
 uint32_t XiDriver::GetSensorParam(const char* name)
@@ -63,7 +103,12 @@ void XiDriver::SetSensorParam(const char* name, uint32_t value)
 void* XiDriver::GrabPicture()
 {
     ImageDevice->GrabPicture();
-    LOG(INFO_LEVEL, "抓图 ---->");
+    //LOG(INFO_LEVEL, "抓图 ---->");
+}
+
+uint32_t XiDriver::GrabPicture (uint8_t* buff,    uint32_t bufflen)
+{
+    return ImageDevice->GrabPicture (buff,  bufflen);
 }
 
 void XiDriver::softTrigger()
@@ -175,7 +220,7 @@ Herror XiDriver::SetInputParam(const char* name, long      value)
 {
     if(name == NULL)
     {
-        return MODULE_NAME_IS_NULL;
+        return ErrNumber = MODULE_NAME_IS_NULL;
     }
     std::string sname = name;
     if(ModuleName == "BlockModule")
@@ -187,8 +232,8 @@ Herror XiDriver::SetInputParam(const char* name, long      value)
         else if(sname == "Height")
             IntPutData.insert (std::pair<std::string, long>("Height",  value));
         else
-            return MODULE_NOFIND_PARAM;
-        return MODULE_SUCCESS;
+            return ErrNumber = MODULE_NOFIND_PARAM;
+        return ErrNumber = MODULE_SUCCESS;
     }else if( ModuleName == "MirrorModule"){
         if(sname == "Width")
             IntPutData.insert (std::pair<std::string, long>("Width",  value));
@@ -199,10 +244,10 @@ Herror XiDriver::SetInputParam(const char* name, long      value)
         else if(sname == "MirrorY")
             IntPutData.insert (std::pair<std::string, long>("MirrorY",  value));
         else
-            return MODULE_NOFIND_PARAM;
-        return MODULE_SUCCESS;
+            return ErrNumber = MODULE_NOFIND_PARAM;
+        return ErrNumber = MODULE_SUCCESS;
     }else{
-        return MODULE_NOFIND_MODULE;
+        return ErrNumber = MODULE_NOFIND_MODULE;
     }
 }
 
@@ -210,7 +255,7 @@ Herror XiDriver::SetInputParam(const char* name, long      value)
 Herror XiDriver::SetInputObject(const char* name, void* pdata)
 {
     if(name == NULL)
-        return MODULE_NAME_IS_NULL;
+        return ErrNumber = MODULE_NAME_IS_NULL;
     std::string sname = name;
 
     if(ModuleName == "BlockModule")
@@ -218,16 +263,16 @@ Herror XiDriver::SetInputObject(const char* name, void* pdata)
         if(sname == "InputImage")
             IntPutData.insert (std::pair<std::string, long>("InputImage",  (long)pdata));
         else
-            return MODULE_NOFIND_OBJECT;
-        return MODULE_SUCCESS;
+            return ErrNumber = MODULE_NOFIND_OBJECT;
+        return ErrNumber = MODULE_SUCCESS;
     }else if(ModuleName == "MirrorModule"){
         if(sname == "InputImage")
             IntPutData.insert (std::pair<std::string, long>("InputImage",  (long)pdata));
         else
-            return MODULE_NOFIND_OBJECT;
-        return MODULE_SUCCESS;
+            return ErrNumber = MODULE_NOFIND_OBJECT;
+        return ErrNumber = MODULE_SUCCESS;
     }else{
-        return MODULE_NOFIND_MODULE;
+        return ErrNumber = MODULE_NOFIND_MODULE;
     }
 }
 
@@ -235,44 +280,42 @@ Herror XiDriver::SetInputObject(const char* name, void* pdata)
 Herror XiDriver::GetOutputParam(const char* name, void* pdata)
 {
     if(name == NULL)
-        return MODULE_NAME_IS_NULL;
+        return ErrNumber = MODULE_NAME_IS_NULL;
     std::string sname = name;
-    std::cout<<sname<<std::endl;
-
     if(ModuleName == "BlockModule")
     {
         if(sname == "HrunCount")
         {
             *((int*)pdata) = (int)OutPutData["HrunCount"];
-            return MODULE_SUCCESS;
+            return ErrNumber = MODULE_SUCCESS;
         }
-        return MODULE_NOFIND_PARAM;
+        return ErrNumber = MODULE_NOFIND_PARAM;
     }else{
-        return MODULE_NOFIND_MODULE;
+        return ErrNumber = MODULE_NOFIND_MODULE;
     }
 }
 
 Herror XiDriver::GetOutputObject(const char* name, void** pdata)
 {
     if(name == NULL)
-        return MODULE_NAME_IS_NULL;
+        return ErrNumber = MODULE_NAME_IS_NULL;
     std::string sname = name;
 
     if(ModuleName == "BlockModule")
     {
         if(sname == "HrunOutPutBuff"){
             *pdata =(void*)OutPutData["HrunOutPutBuff"];
-            return MODULE_SUCCESS;
+            return ErrNumber = MODULE_SUCCESS;
         }
-        return MODULE_NOFIND_PARAM;
+        return ErrNumber = MODULE_NOFIND_PARAM;
     }else if( ModuleName == "MirrorModule"){
         if(sname == "OutPutImage"){
             *pdata =(void*)OutPutData["OutPutImage"];
-            return MODULE_SUCCESS;
+            return ErrNumber = MODULE_SUCCESS;
         }
-        return MODULE_NOFIND_PARAM;
+        return ErrNumber = MODULE_NOFIND_PARAM;
     }else{
-        return MODULE_NOFIND_MODULE;
+        return ErrNumber = MODULE_NOFIND_MODULE;
     }
 }
 
@@ -280,7 +323,7 @@ Herror XiDriver::GetOutputObject(const char* name, void** pdata)
 Herror XiDriver::ExecuteProcedure(const char* name)
 {
     if(name == NULL)
-        return MODULE_NAME_IS_NULL;
+        return ErrNumber = MODULE_NAME_IS_NULL;
 
     int i;
     ModuleName="";
@@ -293,13 +336,13 @@ Herror XiDriver::ExecuteProcedure(const char* name)
         if(!strcmp(name, Fpga_Modules[i]))
         {
             ModuleName = name;
-            return MODULE_SUCCESS;
+            return ErrNumber = MODULE_SUCCESS;
         }else{
             continue;
         }
     }
     LOG(INFO_LEVEL,"没有(%s)模块", name );
-    return MODULE_NOFIND_MODULE;
+    return ErrNumber = MODULE_NOFIND_MODULE;
 }
 
 

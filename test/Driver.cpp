@@ -1,5 +1,5 @@
 #include "XiDriver.h"
-
+#include "XiLog.h"
 using namespace Xilinx;
 
 
@@ -24,22 +24,36 @@ void blockCallback(void* p)
     std::cout<<pBlockInfo->buff[count-1].ce<<std::endl;
 }
 
+void testPicture()
+{
+    uint8_t *Imagebuff = new uint8_t[1024*1280];
+    XiDriver* driver = new XiDriver;
+    while(1)
+    {
+        uint32_t ImageCount = driver->GrabPicture (Imagebuff, 1024*1280);
+        LOG(INFO_LEVEL, "Image:%d x %d." , driver->GetSensorParam ("Width") , driver->GetSensorParam ("Height") );
+    }
+
+
+    delete driver;
+
+}
 
 int main(int argc, char** argv)
 {
-
-
+    testPicture();
+    return 0;
+    char* inputbuff = new char[1024*1280];
+    char* outputbuff = new char[1024*1280];
     XiDriver* driver = new XiDriver;
-    driver->SetSensorParam ("Width", 1000);
-    getchar();
+
     //driver->softTrigger();
   //  while(1)
   //    {
    //      driver->GrabPicture();
   //       usleep(1000);
    //  }
-    char* inputbuff = new char[1024*1280];
-    char* outputbuff = new char[1024*1280];
+
     inputbuff[0] = 1;
     inputbuff[1] = 2;
     inputbuff[2] = 3;
@@ -51,10 +65,14 @@ int main(int argc, char** argv)
     driver->ExecuteProcedure("BlockModule");
     driver->SetInputParam("ThreshValue", 180);
     driver->Execute();
+
     driver->GetOutputParam("HrunCount", (void*)&Count);
+        printf("____\n");
     driver->GetOutputObject("HrunOutPutBuff", (void**)&Pointer);
     printf("HrunCount:%d\n", Count);
     printf("%d , %d , %d,  %d \n", Pointer->mark, Pointer->r, Pointer->cb, Pointer->ce);
+
+    std::cout<< "......  " <<driver->GetErrorMsg () <<std::endl;
 
     std::cout<<"---------------------------------------------------------"<<std::endl;
 
@@ -65,8 +83,11 @@ int main(int argc, char** argv)
     driver->SetInputParam ("Height", 1024);
     driver->SetInputObject ("InputImage", inputbuff);
     driver->Execute();
+    std::cout<< "......  " <<driver->GetErrorMsg () <<std::endl;
     driver->GetOutputObject("OutputImage", (void**)&buffImage);
 
+    driver->ExecuteProcedure ("testModule");
+     std::cout<< "......  " <<driver->GetErrorMsg () <<std::endl;
 
 
 

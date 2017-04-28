@@ -47,14 +47,13 @@ public:
     void registerImageCallback(FHandler* pfun);
     void softTrigger(); //软触发
     uint32_t getImage(unsigned char** buff);
+
     void* GrabPicture();
+    uint32_t GrabPicture (uint8_t* buff,    uint32_t bufflen);
 
     void setFbValue(int buffno, char value, int len);
     uint32_t GetSensorParam(const char* name);
     void SetSensorParam(const char* name, uint32_t value);
-
-
-
 private:
     XiPictureDriver *mPictureDriver;
     XiList *mEventList;
@@ -63,8 +62,6 @@ private:
     std::map<std::string, uint32_t> mSensor;
     void mSensorUpdate();
     void mSensorClear();
-
-
 public:
     XiImageDevice();
     ~XiImageDevice();

@@ -1,11 +1,24 @@
-class XiDriver  Driver
+
+//////////////////////////////////////////////////////////////////////////////
+uint32_t GetSensorParam(const char* name);
+void SetSensorParam(const char* name, uint32_t value);
+@name
+    GainRaw
+    Gamma
+    Width
+    Height
+    OffsetX
+    OffsetY
+    ExposureTimeRaw
+///////////////////////////////////////////////////////////////////////////////////
+
 
 /*Block Module
+ * Function                          Param                         Note
 @ExecuteProcedure       BlockModule             -----模块名称
 @SetInputParam             ThreshValue              -----设置模块阀值
 @GetOutputParam         HrunCount                 ----Hrun 个数
 @GetOutputParam         HrunOutPutBuff        ----获取Hrun 结构体地址
-
 @SetInputParam             Width                         -----图片宽度
 @SetInputParam             Height                        -----图片高度
 @SetInputObject             InputImage               -----图片输入

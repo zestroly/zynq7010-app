@@ -78,7 +78,6 @@ class XiPictureDriver{
 
         TFbuffInfo DDrDataBuff[4];
 
-
     public:
         void setRegisterValue(uint32_t address, uint32_t value);
         uint32_t getRegisterValue(uint32_t address);
