@@ -13,15 +13,17 @@ void SetSensorParam(const char* name, uint32_t value);
 ///////////////////////////////////////////////////////////////////////////////////
 
 
+Herror SetInputParam(const char* name, long   value);
+Herror SetInputObject(const char* name, void* pdata);
 /*Block Module
  * Function                          Param                         Note
-@ExecuteProcedure       BlockModule             -----模块名称
-@SetInputParam             ThreshValue              -----设置模块阀值
-@GetOutputParam         HrunCount                 ----Hrun 个数
-@GetOutputParam         HrunOutPutBuff        ----获取Hrun 结构体地址
-@SetInputParam             Width                         -----图片宽度
-@SetInputParam             Height                        -----图片高度
-@SetInputObject             InputImage               -----图片输入
+ExecuteProcedure       BlockModule             -----模块名称
+SetInputParam             ThreshValue              -----设置模块阀值
+GetOutputParam         HrunCount                 ----Hrun 个数
+GetOutputParam         HrunOutPutBuff        ----获取Hrun 结构体地址
+SetInputParam             Width                         -----图片宽度
+SetInputParam             Height                        -----图片高度
+SetInputObject             InputImage               -----图片输入
 */
 //设置当工作模块
 driver->ExecuteProcedure("BlockModule");

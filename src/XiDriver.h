@@ -31,7 +31,7 @@ public:
     ~XiDriver();
 
     //抓图
-    void* GrabPicture();  //触发模式用
+    void* GrabPicture();  //触发模式用,获取起始地址
     uint32_t GrabPicture (uint8_t* buff,    uint32_t bufflen);
 
     //相机和FPGA参数设置
