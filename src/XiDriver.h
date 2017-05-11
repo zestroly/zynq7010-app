@@ -31,8 +31,8 @@ public:
     ~XiDriver();
 
     //抓图
-    void* GrabPicture();  //触发模式用,获取起始地址
     uint32_t GrabPicture (uint8_t* buff,    uint32_t bufflen);
+     void registerImageCallback(FHandler* pfun);
 
     //相机和FPGA参数设置
     uint32_t GetSensorParam(const char* name);
@@ -62,6 +62,8 @@ private:
     void Terminate();
     void AllocErrLog();
     void DestroyErrLog();
+
+    void* GrabPicture();  //触发模式用,获取起始地址
 
     XiImageDevice *ImageDevice;
     std::string ModuleName;

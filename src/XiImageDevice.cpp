@@ -79,13 +79,12 @@ void* XiImageDevice:: GrabPicture()
     //判断当前模式，连续，还是触发
     uint32_t status = getRegisterValue(0xE0);
     if(status == 1 || status == 0)//触发模式
-    {
-        //清理状态
+    {  //清理状态
         uint8_t buffno = 0;
         mPictureDriver->unlockBuff(buffno);
         usleep(1000);
-        buffno = mPictureDriver->getReadBuffNo();
-        if(buffno  == 0  && mPictureDriver->mthreadWork)
+        buffno = mPictureDriver->getReadyBuffNo();
+        if(buffno  == 0  && mPictureDriver->m_ClassWorking)
         {
             mPictureDriver->lockBuff(buffno);
             return mPictureDriver->getPictureBuff(buffno);
@@ -100,7 +99,7 @@ void* XiImageDevice:: GrabPicture()
 uint32_t  XiImageDevice::GrabPicture (uint8_t* buff,    uint32_t bufflen)
 {
     uint32_t ImageMM, ImageSize = 0;
-    uint8_t buffNo = mPictureDriver->getReadBuffNo();
+    uint8_t buffNo = mPictureDriver->getReadyBuffNo();
     mPictureDriver->lockBuff(buffNo);
     char* Imagebuff = NULL;
     mPictureDriver->getPictureBuff(buffNo,  &Imagebuff);

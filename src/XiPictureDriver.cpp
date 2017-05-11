@@ -7,6 +7,7 @@ namespace Xilinx{
 XiPictureDriver::XiPictureDriver()
 {
     LOG(INFO_LEVEL, "start ..构造");
+    m_GetPictureMode = 0;
     mPicture = new Tpicture;
     memset(mPicture, 0, sizeof(Tpicture));
 
@@ -66,8 +67,8 @@ XiPictureDriver::XiPictureDriver()
     }
 
     //创建线程
-    workfun = NULL;
-    mthreadWork = true;
+    m_CallBackHandler = NULL;
+    m_ClassWorking = true;
     mthread = new std::thread(ImageThread, this);
     LOG(INFO_LEVEL, "end   ..构造");
 }
@@ -75,7 +76,7 @@ XiPictureDriver::XiPictureDriver()
 XiPictureDriver::~XiPictureDriver()
 {
     LOG(INFO_LEVEL, "start ..虚构");
-    mthreadWork = false;
+    m_ClassWorking = false;
     mthread->join();
     delete mthread;
     mthread = NULL;
@@ -104,14 +105,15 @@ XiPictureDriver::~XiPictureDriver()
         delete mPicture;
         mPicture = NULL;
     }
+    m_GetPictureMode = 0;
     LOG(INFO_LEVEL, "end   ..虚构");
 }
 
- void* XiPictureDriver::getPictureBuff(int Number)
+ void* XiPictureDriver::getPictureBuff(int BuffNo)
  {
      if(mPicture->VirtualAddress != NULL)
      {
-         switch(Number)
+         switch(BuffNo)
          {
              case 0:
                  return (void*)mPicture->Fb1VirtualAddress;
@@ -134,11 +136,11 @@ XiPictureDriver::~XiPictureDriver()
      }
  }
 
-int XiPictureDriver::getPictureBuff(int Number, char** buff)
+int XiPictureDriver::getPictureBuff(int BuffNo, char** buff)
 {//根据Number ，获取buff地址
     if(mPicture->VirtualAddress != NULL)
     {
-        switch(Number)
+        switch(BuffNo)
         {
             case 0:
                 *buff = mPicture->Fb1VirtualAddress;
@@ -162,11 +164,6 @@ int XiPictureDriver::getPictureBuff(int Number, char** buff)
     }
 }
 
- void   XiPictureDriver::clearPictureBuff(int Number) //清理状态
-{
-
-
-}
 
 void XiPictureDriver::softTrigger()
 {
@@ -190,15 +187,15 @@ int XiPictureDriver::getHeight()
     return *(mPicture->AxiInt + 0x90/4);
 }
 
-uint8_t XiPictureDriver::getReadBuffNo()
+uint8_t XiPictureDriver::getReadyBuffNo()
 {
     uint32_t rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
     uint8_t  buffNo = ((rel>>4) & 0x3);
-    uint8_t  buffstatus = (rel & 0xF);
+    uint8_t  buffstatus = (rel & 0xF);  //判断是否有准备好的图片
   //  printf("#### %x  %x\n", buffNo, buffstatus);
-    while( mthreadWork && !buffstatus)
+    while( m_ClassWorking && !buffstatus )
     {
-        usleep(500);
+        usleep( 500 );
         rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
         buffNo = ((rel>>4) & 0x3);
         buffstatus = (rel & 0xF);
@@ -222,7 +219,7 @@ void XiPictureDriver::unlockBuff(uint8_t& BuffNo)
 
 uint32_t XiPictureDriver::getImageBuff(unsigned char** buff)
 {
-    uint8_t buffNo = getReadBuffNo();
+    uint8_t buffNo = getReadyBuffNo();
     lockBuff(buffNo);
     getPictureBuff(buffNo, (char**)buff);
     unlockBuff(buffNo);
@@ -238,31 +235,37 @@ uint32_t XiPictureDriver::getImage(unsigned char** buff)
 
 void XiPictureDriver::registerImageCallback(FHandler* pfun)
 {
-    this->mMtx.lock();
-    this->workfun = pfun;
-    this->mMtx.unlock();
+    this->m_ImageCallBackMutex.lock();
+    this->m_CallBackHandler = pfun;
+    this->m_ImageCallBackMutex.unlock();
 }
 
+bool XiPictureDriver::hasRegisterImageCallBack()   //查询是否有回调函数
+{
+    bool rel;
+    this->m_ImageCallBackMutex.lock();
+    rel = ((this->m_CallBackHandler == NULL)? false:true );
+    this->m_ImageCallBackMutex.unlock();
+    return rel;
+}
 
 void XiPictureDriver::ImageThread(XiPictureDriver* PictureDriver)
 {
-    while(PictureDriver->mthreadWork)
+    while(PictureDriver->m_ClassWorking)
     {
-        PictureDriver->mMtx.lock();
-        if(PictureDriver->workfun !=NULL)
+        PictureDriver->m_ImageCallBackMutex.lock();
+        if(PictureDriver->m_CallBackHandler !=NULL)
         {
             TImageType* info = new TImageType;
-            PictureDriver->getImageBuff( &(info->imagebuff));
-            uint32_t width = PictureDriver->getWidth();
-            uint32_t height = PictureDriver->getHeight();
-            info->width = width;
-            info->height = height;
-            info->imagelen = width * height;
-            if((PictureDriver->workfun !=NULL) && PictureDriver->mthreadWork)
-                PictureDriver->workfun(info);
+            PictureDriver->getImageBuff( &(info->imagebuff) );
+            info->width = PictureDriver->getWidth();
+            info->height = PictureDriver->getHeight();
+            info->imagelen = info->width * info->height;
+            if((PictureDriver->m_CallBackHandler  != NULL)  &&  PictureDriver->m_ClassWorking  &&  PictureDriver->m_GetPictureMode == 1 )
+                PictureDriver->m_CallBackHandler(info);
             delete info;
         }
-        PictureDriver->mMtx.unlock();
+        PictureDriver->m_ImageCallBackMutex.unlock();
         usleep(1000);
     }
 }

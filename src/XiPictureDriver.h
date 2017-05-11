@@ -22,22 +22,22 @@
 namespace Xilinx{
 
 typedef struct _Tpicture{
-   int Handler;
+    int Handler;
 
-   unsigned int PhysLength;
-   unsigned int PhysAddress;
+    unsigned int PhysLength;
+    unsigned int PhysAddress;
 
-   void* VirtualAddress;
-   char* Fb1VirtualAddress;
-   char* Fb2VirtualAddress;
-   char* Fb3VirtualAddress;
-   char* Fb4VirtualAddress;
+    void* VirtualAddress;
+    char* Fb1VirtualAddress;
+    char* Fb2VirtualAddress;
+    char* Fb3VirtualAddress;
+    char* Fb4VirtualAddress;
 
-   int AxiHandler;
-   unsigned int AxiPhysLength;
-   unsigned int AxiPhysAddress;
-   volatile unsigned int* AxiInt;
-   void* AxiVirtualAddress;
+    int AxiHandler;
+    unsigned int AxiPhysLength;
+    unsigned int AxiPhysAddress;
+    volatile unsigned int* AxiInt;
+    void* AxiVirtualAddress;
 }Tpicture;
 
 typedef struct _ImageType{
@@ -55,53 +55,59 @@ typedef struct _TFbuffInfo{
     std::string name;
 }TFbuffInfo;
 
-
 typedef void FHandler(TImageType* info);
 
-
-
 class XiPictureDriver{
-    public:
-        int getWidth();
-        int getHeight();
-        void registerImageCallback(FHandler* pfun);
-        void softTrigger(); //软触发
-        uint32_t getImage(unsigned char** buff);
+public:
+    XiPictureDriver();
+    ~XiPictureDriver();
+    int getWidth();             //获取图片宽度
+    int getHeight();            //获取图片长度
+    void registerImageCallback(FHandler* pfun);  //注册回调函数
+    void softTrigger();      //软触发
 
-    private:
-        Tpicture* mPicture;
-        std::thread *mthread;
-        std::mutex mMtx;
-        bool mthreadWork;
-        bool mExitThread;
-        FHandler *workfun;
 
-        TFbuffInfo DDrDataBuff[4];
+    //参数设置
+    void setRegisterValue(uint32_t offset, uint32_t value);
+    uint32_t getRegisterValue(uint32_t offset);
 
-    public:
-        void setRegisterValue(uint32_t address, uint32_t value);
-        uint32_t getRegisterValue(uint32_t address);
+    //缓冲区图片
+    void unlockBuff(uint8_t& BuffNo);    //解锁锁第BuffNo缓冲区
+    void lockBuff(uint8_t& BuffNo);        //锁住第BuffNo缓冲区
+    uint8_t getReadyBuffNo();                   //获取最新的BuffNo (0-3) 编号，查到图片才停止，或者m_ClassWorking=false
+    int getPictureBuff(int BuffNo, char** buff);
+    void* getPictureBuff(int BuffNo);   //获取BuffNo (0-3)缓冲区地址，
+    uint32_t getImageBuff(unsigned char** buff);
+    uint32_t getImage(unsigned char** buff);
 
-        void unlockBuff(uint8_t& BuffNo);
-        void lockBuff(uint8_t& BuffNo);
-        uint8_t getReadBuffNo();
-        int getPictureBuff(int Number, char** buff);
-        void* getPictureBuff(int Number);
-        void   clearPictureBuff(int Number);  //清理状态
+    bool m_StopCatchPicture;                  //抓图标志
+    void StopCatchPicture();                     //停止抓图
+    void StartCatchPicture();                    //可以抓图
+    bool hasRegisterImageCallBack();    //查询是否有回调函数
+    static void ImageThread(XiPictureDriver* PictureDriver);  //线程，用于回调函数
 
-        static void ImageThread(XiPictureDriver* PictureDriver);
-        uint32_t getImageBuff(unsigned char** buff);
+    //物理地址转化成虚拟地址
+    void*     PhyaddrToVirtualaddr(uint32_t Phyaddr);
+    //虚拟地址转化成物理地址
+    uint32_t VirtualaddrToPhyaddr(void* Virtualaddr);
 
-        XiPictureDriver();
-        ~XiPictureDriver();
+private:
+    bool m_ClassWorking;
+    uint32_t m_GetPictureMode;   //0 --- 未设置 ，1 --- 回调 （外触发） ，2 --- 主动抓图（软触发+连续模式）
+    Tpicture* mPicture;
+    std::thread *mthread;
+    std::mutex m_ImageCallBackMutex;
 
-        char* AllocDataBuff(uint8_t index);
-        void   FreeDataBuff(uint8_t index);
-        void*     PhyaddrToVirtualaddr(uint32_t Phyaddr);
-        uint32_t VirtualaddrToPhyaddr(void* Virtualaddr);
+    //回调函数指针
+    FHandler *m_CallBackHandler;
+    TFbuffInfo DDrDataBuff[4];
 
-        friend class XiImageDevice;
+public:
 
+
+    char* AllocDataBuff(uint8_t index);
+    void   FreeDataBuff(uint8_t index);
+    friend class XiImageDevice;
 };
 
 }

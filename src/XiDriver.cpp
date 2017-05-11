@@ -108,6 +108,14 @@ void* XiDriver::GrabPicture()
 
 uint32_t XiDriver::GrabPicture (uint8_t* buff,    uint32_t bufflen)
 {
+    //查询是否有注册回调函数
+    //有回调则停止回调
+
+    //查询当前模式是触发模式还是连续模式
+    //触发模式则进行一次触发
+
+    //连续模式直接抓图
+    ImageDevice->softTrigger ();
     return ImageDevice->GrabPicture (buff,  bufflen);
 }
 
@@ -115,6 +123,14 @@ void XiDriver::softTrigger()
 {
     ImageDevice->softTrigger();
     LOG(INFO_LEVEL, "软出发 ---->");
+}
+
+void XiDriver::registerImageCallback(FHandler* pfun)
+{
+    //查询是否在抓图
+    //在抓图则停止抓图动作
+    //等待抓图停止，完成后注册回调
+    ImageDevice->registerImageCallback (pfun);
 }
 
 Herror XiDriver::ExecuteBlock()
