@@ -65,6 +65,7 @@ public:
     int getHeight();            //获取图片长度
     void registerImageCallback(FHandler* pfun);  //注册回调函数
     void softTrigger();      //软触发
+    void enableCapture(bool ); //允许获取图片
 
 
     //参数设置
@@ -75,6 +76,7 @@ public:
     void unlockBuff(uint8_t& BuffNo);    //解锁锁第BuffNo缓冲区
     void lockBuff(uint8_t& BuffNo);        //锁住第BuffNo缓冲区
     uint8_t getReadyBuffNo();                   //获取最新的BuffNo (0-3) 编号，查到图片才停止，或者m_ClassWorking=false
+    uint8_t HardTrigerGetReadyBuffNo();                   //注册回调读取图片
     int getPictureBuff(int BuffNo, char** buff);
     void* getPictureBuff(int BuffNo);   //获取BuffNo (0-3)缓冲区地址，
     uint32_t getImageBuff(unsigned char** buff);

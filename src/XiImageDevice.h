@@ -46,6 +46,7 @@ public:
     int getHeight();
     void registerImageCallback(FHandler* pfun);
     void softTrigger(); //软触发
+    void enableCapture(bool status); //允许获取图片
     uint32_t getImage(unsigned char** buff);
 
     void* GrabPicture();

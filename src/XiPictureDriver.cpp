@@ -70,6 +70,12 @@ XiPictureDriver::XiPictureDriver()
     m_CallBackHandler = NULL;
     m_ClassWorking = true;
     mthread = new std::thread(ImageThread, this);
+
+  //  this->setRegisterValue(0xE0,1);
+    //使能抓图模式
+    this->setRegisterValue(0xDC,1);
+    //设置成软出发
+    this->setRegisterValue(0xFC,0);
     LOG(INFO_LEVEL, "end   ..构造");
 }
 
@@ -106,6 +112,8 @@ XiPictureDriver::~XiPictureDriver()
         mPicture = NULL;
     }
     m_GetPictureMode = 0;
+
+
     LOG(INFO_LEVEL, "end   ..虚构");
 }
 
@@ -172,6 +180,17 @@ void XiPictureDriver::softTrigger()
     *(mPicture->AxiInt + 0xE4/4) = 1;
 }
 
+void XiPictureDriver::enableCapture(bool status) //允许获取图片
+{
+    if(mPicture->AxiHandler < 0)
+        return;
+    if(status)
+        *(mPicture->AxiInt + 0xDC/4) = 1;
+    else
+        *(mPicture->AxiInt + 0xDC/4) = 0;
+}
+
+
 int XiPictureDriver::getWidth()
 {
     if(mPicture->AxiHandler < 0)
@@ -192,7 +211,7 @@ uint8_t XiPictureDriver::getReadyBuffNo()
     uint32_t rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
     uint8_t  buffNo = ((rel>>4) & 0x3);
     uint8_t  buffstatus = (rel & 0xF);  //判断是否有准备好的图片
-  //  printf("#### %x  %x\n", buffNo, buffstatus);
+    //printf("#### %x  %x\n", buffNo, buffstatus);
     while( m_ClassWorking && !buffstatus )
     {
         usleep( 500 );
@@ -200,10 +219,23 @@ uint8_t XiPictureDriver::getReadyBuffNo()
         buffNo = ((rel>>4) & 0x3);
         buffstatus = (rel & 0xF);
     }
-  //  printf("2*****  %x  %x\n", buffNo, buffstatus);
+   // printf("2*****  %x  %x\n", buffNo, buffstatus);
     return buffNo;
 }
-
+ uint8_t XiPictureDriver::HardTrigerGetReadyBuffNo()
+ {
+     uint32_t rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
+     uint8_t  buffNo = ((rel>>4) & 0x3);
+     uint8_t  buffstatus = (rel & 0xF);  //判断是否有准备好的图片
+     while( (getRegisterValue (0xFC) == 1) && m_ClassWorking && !buffstatus )
+     {
+         usleep( 500 );
+         rel = *((volatile unsigned int*) (mPicture->AxiInt + 0xD4/4));
+         buffNo = ((rel>>4) & 0x3);
+         buffstatus = (rel & 0xF);
+     }
+     return buffNo;
+ }
 
 void XiPictureDriver::lockBuff(uint8_t& BuffNo)
 {
@@ -219,9 +251,9 @@ void XiPictureDriver::unlockBuff(uint8_t& BuffNo)
 
 uint32_t XiPictureDriver::getImageBuff(unsigned char** buff)
 {
-    uint8_t buffNo = getReadyBuffNo();
+    uint8_t buffNo = HardTrigerGetReadyBuffNo();
     lockBuff(buffNo);
-    getPictureBuff(buffNo, (char**)buff);
+    getPictureBuff(buffNo, (char**)buff);  //通过buffNo 编号来获取buff地址
     unlockBuff(buffNo);
     return 0;
 }
@@ -254,16 +286,17 @@ void XiPictureDriver::ImageThread(XiPictureDriver* PictureDriver)
     while(PictureDriver->m_ClassWorking)
     {
         PictureDriver->m_ImageCallBackMutex.lock();
-        if(PictureDriver->m_CallBackHandler !=NULL)
+        if( (PictureDriver->getRegisterValue (0xFC) == 1)  &&  (PictureDriver->m_CallBackHandler !=NULL)  )
         {
             TImageType* info = new TImageType;
             PictureDriver->getImageBuff( &(info->imagebuff) );
             info->width = PictureDriver->getWidth();
             info->height = PictureDriver->getHeight();
             info->imagelen = info->width * info->height;
-            if((PictureDriver->m_CallBackHandler  != NULL)  &&  PictureDriver->m_ClassWorking  &&  PictureDriver->m_GetPictureMode == 1 )
+            if((PictureDriver->m_CallBackHandler  != NULL)  &&  PictureDriver->m_ClassWorking  &&(PictureDriver->getRegisterValue (0xFC) == 1)  )
                 PictureDriver->m_CallBackHandler(info);
             delete info;
+
         }
         PictureDriver->m_ImageCallBackMutex.unlock();
         usleep(1000);

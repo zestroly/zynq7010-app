@@ -26,9 +26,7 @@
     <Combo StringValue="Mono 12" IntValue="1"/>
     <Combo StringValue="YUV 422" IntValue="2"/>
   </cmd>
-  <cmd name="PixelSize" reg="0x40600044" type="String">
-    <Combo StringValue="8 Bits/Pixel" IntValue="8"/>
-  </cmd>
+  <cmd name="PixelSize" reg="0x40600044" type="Int">
   <cmd name="PixelColorFilter" reg="0x40600048" type="String">
     <Combo StringValue="No Filter" IntValue="0"/>
   </cmd>
@@ -44,12 +42,14 @@
   </cmd>
   <cmd name="Width" reg="0x40600080" type="Int"/>
   <cmd name="Height" reg="0x40600090" type="Int"/>
+  <cmd name="MaxWidth"  reg="0x40600088" type="Int"/>
+  <cmd name="MaxHeight" reg="0x40600098" type="Int"/>
   <cmd name="OffsetX" reg="0x406000A0" type="Int"/>
   <cmd name="OffsetY" reg="0x406000B0" type="Int"/>
   <cmd name="ExposureAuto" reg="0x406000C0" type="String">
-    <Combo StringValue="off" IntValue="0"/>
-    <Combo StringValue="once" IntValue="1"/>
-    <Combo StringValue="continuous" IntValue="2"/>
+    <Combo StringValue="Off" IntValue="0"/>
+    <Combo StringValue="Once" IntValue="1"/>
+    <Combo StringValue="Continuous" IntValue="2"/>
   </cmd>
   <cmd name="ExposureTimeRaw" reg="0x406000C4" type="Int"/>
   <cmd name="AcquisitionAuto" reg="0x406000E0" type="String">
@@ -58,4 +58,11 @@
     <Combo StringValue="Continuous" IntValue="2"/>
   </cmd>
   <cmd name="DeviceDNA" reg="0x4060EF00" type="String"/>
+  <cmd  name="TriggerMode" reg="0x406000FC" type="String" Node="触发模式">
+    <Combo StringValue="SoftTrigger" IntValue="0"/>
+    <Combo StringValue="HardTrigger" IntValue="1"/>
+  </cmd>
+  <cmd name="TriggerPolarity" reg="0x406000E8" type="Int"  Note="外触发极性选择"/>
+  <cmd name="TriggerDelayTime" reg="0x406000EC" type="Int" Note="外触发延时时间"/>
+  <cmd name="TriggerFilteringTime" reg="0x406000F0" type="Int"  Note="外触发滤波时间"/>
 </root>

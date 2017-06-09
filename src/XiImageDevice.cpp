@@ -69,6 +69,11 @@ void XiImageDevice::softTrigger() //软触发
     mPictureDriver->softTrigger();
 }
 
+void XiImageDevice::enableCapture(bool status) //允许获取图片
+{
+    mPictureDriver->enableCapture (status);
+}
+
 uint32_t XiImageDevice::getImage(unsigned char** buff)
 {
     mPictureDriver->getImage(buff);
@@ -98,7 +103,7 @@ void* XiImageDevice:: GrabPicture()
 
 uint32_t  XiImageDevice::GrabPicture (uint8_t* buff,    uint32_t bufflen)
 {
-    uint32_t ImageMM, ImageSize = 0;
+    uint32_t ImageMM = 0, ImageSize = 0;
     uint8_t buffNo = mPictureDriver->getReadyBuffNo();
     mPictureDriver->lockBuff(buffNo);
     char* Imagebuff = NULL;

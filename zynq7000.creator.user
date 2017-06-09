@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.5.1, 2017-05-09T08:55:29. -->
+<!-- Written by QtCreator 4.3.1, 2017-06-08T18:37:41. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -40,6 +40,7 @@
    <value type="bool" key="EditorConfiguration.ScrollWheelZooming">true</value>
    <value type="bool" key="EditorConfiguration.ShowMargin">false</value>
    <value type="int" key="EditorConfiguration.SmartBackspaceBehavior">0</value>
+   <value type="bool" key="EditorConfiguration.SmartSelectionChanging">true</value>
    <value type="bool" key="EditorConfiguration.SpacesForTabs">true</value>
    <value type="int" key="EditorConfiguration.TabKeyBehavior">0</value>
    <value type="int" key="EditorConfiguration.TabSize">8</value>
@@ -58,9 +59,9 @@
  <data>
   <variable>ProjectExplorer.Project.Target.0</variable>
   <valuemap type="QVariantMap">
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 5.5.1 GCC 64bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 5.5.1 GCC 64bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.55.gcc_64_kit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">zynq7000</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">zynq7000</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{8a51e873-b935-4a61-8e30-0d12f02d0375}</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
@@ -68,9 +69,7 @@
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/opt/Xilinx2016/work/zynq7000</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
-      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets">
-       <value type="QString">all</value>
-      </valuelist>
+      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets"/>
       <value type="bool" key="GenericProjectManager.GenericMakeStep.Clean">false</value>
       <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments"></value>
       <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeCommand"></value>
@@ -103,8 +102,35 @@
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Clean</value>
     </valuemap>
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
-    <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
-    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges"/>
+    <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">true</value>
+    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
+     <value type="QString">AR=arm-linux-gnueabihf-ar</value>
+     <value type="QString">ARCH=arm</value>
+     <value type="QString">AS=&quot;arm-linux-gnueabihf-as &quot;</value>
+     <value type="QString">CC=&quot;arm-linux-gnueabihf-gcc  --sysroot=$SDKTARGETSYSROOT&quot;</value>
+     <value type="QString">CFLAGS=&quot; -O2 -pipe -g -feliminate-unused-debug-types &quot;</value>
+     <value type="QString">CONFIGURE_FLAGS=&quot;--target=arm-linux-gnueabihf --host=arm-linux-gnueabihf --build=i686-linux --with-libtool-sysroot=$SDKTARGETSYSROOT&quot;</value>
+     <value type="QString">CPP=&quot;arm-linux-gnueabihf-gcc -E  --sysroot=$SDKTARGETSYSROOT&quot;</value>
+     <value type="QString">CPPFLAGS=&quot;&quot;</value>
+     <value type="QString">CROSS_COMPILE=arm-linux-gnueabihf-</value>
+     <value type="QString">CXX=&quot;arm-linux-gnueabihf-g++  --sysroot=$SDKTARGETSYSROOT&quot;</value>
+     <value type="QString">CXXFLAGS=&quot; -O2 -pipe -g -feliminate-unused-debug-types &quot;</value>
+     <value type="QString">GDB=arm-linux-gnueabihf-gdb</value>
+     <value type="QString">KCFLAGS=&quot;--sysroot=$SDKTARGETSYSROOT&quot;</value>
+     <value type="QString">LD=&quot;arm-linux-gnueabihf-ld  --sysroot=$SDKTARGETSYSROOT&quot;</value>
+     <value type="QString">LDFLAGS=&quot; -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed &quot;</value>
+     <value type="QString">M4=m4</value>
+     <value type="QString">NM=arm-linux-gnueabihf-nm</value>
+     <value type="QString">OBJCOPY=arm-linux-gnueabihf-objcopy</value>
+     <value type="QString">OBJDUMP=arm-linux-gnueabihf-objdump</value>
+     <value type="QString">PATH=/opt/Xilinx2016/gcc-arm-linux-gnueabi/bin:/opt/Xilinx2016/sysroots/zynq-generic/bin:$PATH</value>
+     <value type="QString">PKG_CONFIG_PATH=$SDKTARGETSYSROOT/usr/lib/pkgconfig</value>
+     <value type="QString">PKG_CONFIG_SYSROOT_DIR=$SDKTARGETSYSROOT</value>
+     <value type="QString">RANLIB=arm-linux-gnueabihf-ranlib</value>
+     <value type="QString">SDKTARGETSYSROOT=/opt/Xilinx2016/sysroots/zynq-generic</value>
+     <value type="QString">STRIP=arm-linux-gnueabihf-strip</value>
+     <value type="QString">TARGET_PREFIX=arm-linux-gnueabihf-</value>
+    </valuelist>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericBuildConfiguration</value>
@@ -125,6 +151,11 @@
    <value type="int" key="ProjectExplorer.Target.DeployConfigurationCount">1</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.PluginSettings"/>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.0">
+    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
+    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
+    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
+    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
+    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
     <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
     <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
     <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
@@ -164,7 +195,7 @@
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments"></value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable"></value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.WorkingDirectory">%{buildDir}</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">自定义执行档</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>

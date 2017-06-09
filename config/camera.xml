@@ -2,37 +2,43 @@
 <Param ErrorCode="0">
   <camera>
     <AnalogControls>
-      <GainAuto Value="Off" Type="String" Combo="Off;Once;Continuous"/>
-      <GainSelector Value="Digital" Type="String" Combo="Digital;Analog"/>
-      <GainRaw Value="0" Type="Number" Decimals="0" Category="Input" MinValue="0" MaxValue="63" Control="1"/>
-      <GammaEnable Value="Disable" Type="String" Combo="Disable;Enable"/>
-      <GammaSelector Value="User" Type="String" Combo="User;sRgb"/>
-    </AnalogControls>
+      <GainAuto Value="Off" Type="Combo" Combo="Off;Once;Continuous" Enable="1"/>
+      <GainSelector Value="Digital" Type="Combo" Combo="Digital;Analog" Enable="1"/>
+      <GainRaw Value="0" Type="Number" Decimals="0" Category="Input" MinValue="0" MaxValue="63" Control="1" Enable="1"/>
+      <GammaEnable Value="Disable" Type="Combo" Combo="Disable;Enable" Enable="1"/>
+      <GammaSelector Value="User" Type="Combo" Combo="User;sRgb" Enable="1"/>
+    </AnalogControls>[
     <ImageFormatControls>
-      <PixelFormat Value="Mono 8" Type="String" Combo="Mono 8;Mono 12;YUV 422"/>
-      <PixelSize Value="8 Bits/Pixel" Type="String"/>
-      <PixelColorFilter Value="No Filter" Type="String"/>
-      <ReverseX Value="False" Type="Bool"/>
-      <ReverseY Value="False" Type="Bool"/>
-      <TestImageSelector Value="Test Image Off" Type="String" Combo="Test Image Off;Test Image 1;Test Image 2"/>
+      <PixelFormat Value="Mono 8" Type="Combo" Combo="Mono 8;Mono 12;YUV 422" Enable="1"/>
+      <PixelSize Value="8" Type="Number"  Decimals="0"  Unit="Bits/Pixel"  Enable="0"/>
+      <PixelColorFilter Value="No Filter" Type="String" Enable="1"/>
+      <ReverseX Value="False" Type="Boolean" Enable="1"/>
+      <ReverseY Value="False" Type="Boolean" Enable="1"/>
+      <TestImageSelector Value="Test Image Off" Type="Combo" Combo="Test Image Off;Test Image 1;Test Image 2" Enable="1"/>
     </ImageFormatControls>
     <AOIControls>
-      <Width Value="1280" Type="Number" Decimals="0" MaxValue="1280" MinValue="1"/>
-      <Height Value="1024" Type="Number" Decimals="0" MaxValue="1024" MinValue="1"/>
-      <OffsetX Value="6" Type="Number" Decimals="0" MaxValue="1680" MinValue="1"/>
-      <OffsetY Value="6" Type="Number" Decimals="0" MaxValue="1680" MinValue="1"/>
+      <Width Value="1280" Type="Number" Decimals="0" MaxValue="1280" MinValue="1" Enable="1"/>
+      <Height Value="1024" Type="Number" Decimals="0" MaxValue="1024" MinValue="1" Enable="1"/>
+      <MaxWidth Value="1280" Type="Number" Decimals="0"  Enable="0"/>
+      <MaxHeight Value="1024" Type="Number" Decimals="0" Enable="0"/>
+      <OffsetX Value="6" Type="Number" Decimals="0" MaxValue="1680" MinValue="1" Enable="1"/>
+      <OffsetY Value="6" Type="Number" Decimals="0" MaxValue="1680" MinValue="1" Enable="1"/>
     </AOIControls>
     <AcquisitionControls>
-      <ExposureAuto Value="off" Type="String" Combo="off;once;continuous"/>
-      <ExposureTimeRaw Value="640" Type="Number" Decimals="0" MaxValue="999985" MixValue="35"/>
+      <ExposureAuto Value="Off" Type="Combo" Combo="Off;Once;Continuous" Enable="1"/>
+      <ExposureTimeRaw Value="640" Type="Number" Decimals="0" MaxValue="999985" MixValue="35" Enable="1"/>
     </AcquisitionControls>
     <TriggerControls>
-      <AcquisitionAuto Value="Off" Type="String" Combo="Off;Once;Continuous"/>
+      <AcquisitionAuto Value="Off" Type="Combo" Combo="Off;Once;Continuous" Enable="0"/>
+      <TriggerMode Value="SoftTrigger" Type="Combo" Combo="SoftTrigger;HardTrigger" Enable="1" />
+      <TriggerPolarity Value="Hight" Type="Combo" Combo="Hight;Low" Enable="1"/>
+      <TriggerDelayTime Value="100"  Type="Number" Decimals="0" Unit="10us" Enable="1" />
+      <TriggerFilteringTime  Value="100"  Type="Number" Decimals="0" Unit="10us"  Enable="1" />
     </TriggerControls>
     <DeviceInformation>
-      <DeviceDNA Value="74b58430d90854-000A35001E53" Type="String" Mode="ReadOnly"/>
-      <Method Value="dhcp" Type="String" Mode="ReadOnly">
-        <Address Value="" Type="String" Mode="ReadOnly"/>
+      <DeviceDNA Value="74b58430d90854-000A35001E53" Type="String" Enable="0"/>
+      <Method Value="dhcp" Type="String" Enable="0">
+        <Address Value="" Type="String" Enable="0"/>
       </Method>
     </DeviceInformation>
   </camera>

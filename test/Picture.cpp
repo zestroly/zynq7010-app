@@ -57,8 +57,6 @@ void testCatchPictureSpeed()
 {
     Xilinx::XiPictureDriver *pDriver =new Xilinx::XiPictureDriver;
     pDriver->registerImageCallback(ImageCallback);
-    pDriver->setRegisterValue(0xE0, 2);
-    pDriver->setRegisterValue(0x200, 1);
     getchar();
     delete pDriver;
 

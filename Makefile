@@ -26,6 +26,7 @@ all: $(TARGET0) test install
 $(TARGET0):$(OBJECTS)
 	$(CXX) $(LFLAGS) $(CXXFLAGS) $(OBJECTS) -o $(TARGET0) $(LIBS)
 	cp src/*.h include
+	cp lib/* bin -rfa
 
 .SUFFIXES: .o .c .cpp .cc .cxx .C
 
@@ -72,6 +73,7 @@ bin/Register:test/register.o
 install:
 	cp bin/* /tftpboot/nfsroot/home/root/bin/  -rf
 	cp lib/* /tftpboot/nfsroot/home/root/lib/ -rf
+	cp config/* /tftpboot/nfsroot/home/root/config/ -rf
 
 
 clean:
@@ -81,4 +83,4 @@ clean:
 	rm $(TARGET0) -rf
 	rm include/* -rf
 bsp:
-	tar zcvf libdriver.tar.bz include lib doc
+	tar zcvf libdriver.tar.bz include lib doc config

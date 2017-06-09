@@ -24,20 +24,68 @@ void blockCallback(void* p)
     std::cout<<pBlockInfo->buff[count-1].ce<<std::endl;
 }
 
-void testPicture()
+
+
+int framerate;
+unsigned int sec_temp;
+
+
+void ImageCallback(Xilinx::TImageType *info)
 {
-    uint8_t *Imagebuff = new uint8_t[1024*1280];
-    XiDriver* driver = new XiDriver;
-    while(1)
-    {
-        uint32_t ImageCount = driver->GrabPicture (Imagebuff, 1024*1280);
-        LOG(INFO_LEVEL, "Image:%d x %d." , driver->GetSensorParam ("Width") , driver->GetSensorParam ("Height") );
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    if(sec_temp == tv.tv_sec)
+        framerate++;
+    else{
+        sec_temp = tv.tv_sec;
+        std::cout<<"=================================framer rate:"<<framerate<<std::endl;
+        framerate = 0;
     }
 
+    std::cout<<tv.tv_sec<<"."<<tv.tv_usec<<":"<<info->width <<"x"<<info->height<<std::endl;
+    char* buff = new char[info->imagelen];
+    unsigned short* destbuff = (unsigned short*)buff;
+    unsigned short* srcbuff  = (unsigned short*)info->imagebuff;
 
+    memcpy(buff, info->imagebuff, info->imagelen);
+    delete[] buff;
+
+}
+
+void testPicture()
+{
+    std::cout<<"-------------------------"<<std::endl;
+    uint8_t *Imagebuff = new uint8_t[1024*1280];
+    XiDriver* driver = new XiDriver;
+
+    driver->registerImageCallback (ImageCallback);
+    getchar();
+
+    uint32_t ImageCount = driver->GrabPicture (Imagebuff, 1024*1280);
+    if(ImageCount > 0)
+        LOG(INFO_LEVEL, "Image:%d x %d." , driver->GetSensorParam ("Width") , driver->GetSensorParam ("Height") );
+     getchar();
+
+
+     ImageCount = driver->GrabPicture (Imagebuff, 1024*1280);
+         if(ImageCount > 0)
+             LOG(INFO_LEVEL, "Image:%d x %d." , driver->GetSensorParam ("Width") , driver->GetSensorParam ("Height") );
+      getchar();
+
+
+    while(1)
+    {
+        ImageCount = driver->GrabPicture (Imagebuff, 1024*1280);
+        if(ImageCount > 0)
+            LOG(INFO_LEVEL, "Image:%d x %d." , driver->GetSensorParam ("Width") , driver->GetSensorParam ("Height") );
+    //   getchar();
+    }
     delete driver;
 
 }
+
 
 int main(int argc, char** argv)
 {
@@ -46,13 +94,6 @@ int main(int argc, char** argv)
     char* inputbuff = new char[1024*1280];
     char* outputbuff = new char[1024*1280];
     XiDriver* driver = new XiDriver;
-
-    //driver->softTrigger();
-  //  while(1)
-  //    {
-   //      driver->GrabPicture();
-  //       usleep(1000);
-   //  }
 
     inputbuff[0] = 1;
     inputbuff[1] = 2;

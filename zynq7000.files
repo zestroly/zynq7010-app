@@ -1,3 +1,8 @@
+config/camera.xml
+config/m001.xml
+script/initialize.sh
+script/startup.sh
+script/update_bootload.sh
 src/libdate.cpp
 src/libdate.h
 src/libnetwork.cpp
