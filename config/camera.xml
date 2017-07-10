@@ -7,7 +7,7 @@
       <GainRaw Value="0" Type="Number" Decimals="0" Category="Input" MinValue="0" MaxValue="63" Control="1" Enable="1"/>
       <GammaEnable Value="Disable" Type="Combo" Combo="Disable;Enable" Enable="1"/>
       <GammaSelector Value="User" Type="Combo" Combo="User;sRgb" Enable="1"/>
-    </AnalogControls>[
+    </AnalogControls>
     <ImageFormatControls>
       <PixelFormat Value="Mono 8" Type="Combo" Combo="Mono 8;Mono 12;YUV 422" Enable="1"/>
       <PixelSize Value="8" Type="Number"  Decimals="0"  Unit="Bits/Pixel"  Enable="0"/>

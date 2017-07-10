@@ -47,7 +47,7 @@ void XiLog::create()
     filedata += "log4cpp.appender.rootAppender.layout.ConversionPattern=%d [%p] %m%n \n";
 
     ofstream ofile;
-    confile = "log4cpp.properties";
+    confile = "/home/root/config/log4cpp.properties";
     ofile.open(confile);
     ofile<<filedata;
     ofile.close();

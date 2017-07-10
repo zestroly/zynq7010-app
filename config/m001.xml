@@ -26,7 +26,7 @@
     <Combo StringValue="Mono 12" IntValue="1"/>
     <Combo StringValue="YUV 422" IntValue="2"/>
   </cmd>
-  <cmd name="PixelSize" reg="0x40600044" type="Int">
+  <cmd name="PixelSize" reg="0x40600044" type="Int"/>
   <cmd name="PixelColorFilter" reg="0x40600048" type="String">
     <Combo StringValue="No Filter" IntValue="0"/>
   </cmd>
@@ -58,11 +58,11 @@
     <Combo StringValue="Continuous" IntValue="2"/>
   </cmd>
   <cmd name="DeviceDNA" reg="0x4060EF00" type="String"/>
-  <cmd  name="TriggerMode" reg="0x406000FC" type="String" Node="触发模式">
+  <cmd name="TriggerMode" reg="0x406000FC" type="String" >
     <Combo StringValue="SoftTrigger" IntValue="0"/>
     <Combo StringValue="HardTrigger" IntValue="1"/>
   </cmd>
-  <cmd name="TriggerPolarity" reg="0x406000E8" type="Int"  Note="外触发极性选择"/>
-  <cmd name="TriggerDelayTime" reg="0x406000EC" type="Int" Note="外触发延时时间"/>
-  <cmd name="TriggerFilteringTime" reg="0x406000F0" type="Int"  Note="外触发滤波时间"/>
+  <cmd name="TriggerPolarity" reg="0x406000E8" type="Int" />
+  <cmd name="TriggerDelayTime" reg="0x406000EC" type="Int" />
+  <cmd name="TriggerFilteringTime" reg="0x406000F0" type="Int"/>
 </root>
